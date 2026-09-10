@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CardRouteImport } from './routes/card'
+import { Route as ConnectBalanceRouteImport } from './routes/connect-balance'
+import { Route as PaymentAddressRouteImport } from './routes/payment-address'
+import { Route as PayoutsRouteImport } from './routes/payouts'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as WithdrawRouteImport } from './routes/withdraw'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CardRoute = CardRouteImport.update({
+  id: '/card',
+  path: '/card',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectBalanceRoute = ConnectBalanceRouteImport.update({
+  id: '/connect-balance',
+  path: '/connect-balance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentAddressRoute = PaymentAddressRouteImport.update({
+  id: '/payment-address',
+  path: '/payment-address',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayoutsRoute = PayoutsRouteImport.update({
+  id: '/payouts',
+  path: '/payouts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WithdrawRoute = WithdrawRouteImport.update({
+  id: '/withdraw',
+  path: '/withdraw',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/card': typeof CardRoute
+  '/connect-balance': typeof ConnectBalanceRoute
+  '/payment-address': typeof PaymentAddressRoute
+  '/payouts': typeof PayoutsRoute
+  '/profile': typeof ProfileRoute
+  '/support': typeof SupportRoute
+  '/transactions': typeof TransactionsRoute
+  '/withdraw': typeof WithdrawRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/card': typeof CardRoute
+  '/connect-balance': typeof ConnectBalanceRoute
+  '/payment-address': typeof PaymentAddressRoute
+  '/payouts': typeof PayoutsRoute
+  '/profile': typeof ProfileRoute
+  '/support': typeof SupportRoute
+  '/transactions': typeof TransactionsRoute
+  '/withdraw': typeof WithdrawRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/card': typeof CardRoute
+  '/connect-balance': typeof ConnectBalanceRoute
+  '/payment-address': typeof PaymentAddressRoute
+  '/payouts': typeof PayoutsRoute
+  '/profile': typeof ProfileRoute
+  '/support': typeof SupportRoute
+  '/transactions': typeof TransactionsRoute
+  '/withdraw': typeof WithdrawRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/card'
+    | '/connect-balance'
+    | '/payment-address'
+    | '/payouts'
+    | '/profile'
+    | '/support'
+    | '/transactions'
+    | '/withdraw'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/card'
+    | '/connect-balance'
+    | '/payment-address'
+    | '/payouts'
+    | '/profile'
+    | '/support'
+    | '/transactions'
+    | '/withdraw'
+  id:
+    | '__root__'
+    | '/'
+    | '/card'
+    | '/connect-balance'
+    | '/payment-address'
+    | '/payouts'
+    | '/profile'
+    | '/support'
+    | '/transactions'
+    | '/withdraw'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CardRoute: typeof CardRoute
+  ConnectBalanceRoute: typeof ConnectBalanceRoute
+  PaymentAddressRoute: typeof PaymentAddressRoute
+  PayoutsRoute: typeof PayoutsRoute
+  ProfileRoute: typeof ProfileRoute
+  SupportRoute: typeof SupportRoute
+  TransactionsRoute: typeof TransactionsRoute
+  WithdrawRoute: typeof WithdrawRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/card': {
+      id: '/card'
+      path: '/card'
+      fullPath: '/card'
+      preLoaderRoute: typeof CardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect-balance': {
+      id: '/connect-balance'
+      path: '/connect-balance'
+      fullPath: '/connect-balance'
+      preLoaderRoute: typeof ConnectBalanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment-address': {
+      id: '/payment-address'
+      path: '/payment-address'
+      fullPath: '/payment-address'
+      preLoaderRoute: typeof PaymentAddressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payouts': {
+      id: '/payouts'
+      path: '/payouts'
+      fullPath: '/payouts'
+      preLoaderRoute: typeof PayoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/withdraw': {
+      id: '/withdraw'
+      path: '/withdraw'
+      fullPath: '/withdraw'
+      preLoaderRoute: typeof WithdrawRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CardRoute: CardRoute,
+  ConnectBalanceRoute: ConnectBalanceRoute,
+  PaymentAddressRoute: PaymentAddressRoute,
+  PayoutsRoute: PayoutsRoute,
+  ProfileRoute: ProfileRoute,
+  SupportRoute: SupportRoute,
+  TransactionsRoute: TransactionsRoute,
+  WithdrawRoute: WithdrawRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
