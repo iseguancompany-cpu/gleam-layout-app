@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatUsd, payouts } from "@/lib/demo-data";
 
-export const Route = createFileRoute("/payouts")({
+export const Route = createFileRoute("/_authenticated/payouts")({
   head: () => ({
     meta: [
       { title: "Recent Payouts — Cash Loading Portal" },

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 
-export const Route = createFileRoute("/connect-balance")({
+export const Route = createFileRoute("/_authenticated/connect-balance")({
   head: () => ({
     meta: [
       { title: "Connect Balance — Cash Loading Portal" },

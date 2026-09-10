@@ -5,7 +5,7 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { account, formatUsd } from "@/lib/demo-data";
 
-export const Route = createFileRoute("/withdraw")({
+export const Route = createFileRoute("/_authenticated/withdraw")({
   head: () => ({
     meta: [
       { title: "Withdraw — Cash Loading Portal" },
