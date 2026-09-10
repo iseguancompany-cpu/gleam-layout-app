@@ -14,7 +14,7 @@ export const Route = createFileRoute("/withdraw")({
       { property: "og:description", content: "Choose a payout method and place a withdrawal request." },
     ],
   }),
-  component: Withdraw;
+  component: Withdraw,
 });
 
 const methods = ["Cash App", "Bank Transfer", "Card"] as const;
