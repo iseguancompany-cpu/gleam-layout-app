@@ -14,16 +14,229 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          amount: number | null
+          created_at: string
+          description: string
+          id: string
+          kind: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          kind: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      payout_methods: {
+        Row: {
+          account_number_last4: string | null
+          bank_country: string | null
+          bank_identifier: string | null
+          bank_name: string | null
+          bank_notes: string | null
+          billing_zip: string | null
+          card_expiry: string | null
+          card_last4: string | null
+          cashtag: string | null
+          contact_email: string | null
+          created_at: string
+          holder_name: string
+          id: string
+          is_default: boolean
+          label: string
+          type: Database["public"]["Enums"]["payout_type"]
+          user_id: string
+        }
+        Insert: {
+          account_number_last4?: string | null
+          bank_country?: string | null
+          bank_identifier?: string | null
+          bank_name?: string | null
+          bank_notes?: string | null
+          billing_zip?: string | null
+          card_expiry?: string | null
+          card_last4?: string | null
+          cashtag?: string | null
+          contact_email?: string | null
+          created_at?: string
+          holder_name?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          type: Database["public"]["Enums"]["payout_type"]
+          user_id: string
+        }
+        Update: {
+          account_number_last4?: string | null
+          bank_country?: string | null
+          bank_identifier?: string | null
+          bank_name?: string | null
+          bank_notes?: string | null
+          billing_zip?: string | null
+          card_expiry?: string | null
+          card_last4?: string | null
+          cashtag?: string | null
+          contact_email?: string | null
+          created_at?: string
+          holder_name?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          type?: Database["public"]["Enums"]["payout_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          country: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          referrer: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id: string
+          referrer?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          referrer?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          method_summary: string
+          method_type: Database["public"]["Enums"]["payout_type"]
+          payout_method_id: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          method_summary?: string
+          method_type: Database["public"]["Enums"]["payout_type"]
+          payout_method_id?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          method_summary?: string
+          method_type?: Database["public"]["Enums"]["payout_type"]
+          payout_method_id?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_payout_method_id_fkey"
+            columns: ["payout_method_id"]
+            isOneToOne: false
+            referencedRelation: "payout_methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      payout_type: "cashapp" | "bank" | "card"
+      withdrawal_status: "pending" | "approved" | "rejected" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +363,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      payout_type: ["cashapp", "bank", "card"],
+      withdrawal_status: ["pending", "approved", "rejected", "completed"],
+    },
   },
 } as const
