@@ -1,99 +1,73 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { AppShell } from "@/components/AppShell";
-import { StatTile } from "@/components/StatTile";
-import { StatusBadge } from "@/components/StatusBadge";
-import { TrendChart } from "@/components/TrendChart";
-import { account, activity, formatUsd } from "@/lib/demo-data";
+import { useAuthUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Cash Loading Portal" },
+      { title: "Cash Loading Portal — Balances and Payouts" },
       {
         name: "description",
         content:
-          "Account dashboard with balance summary, payout activity and transaction history in a clean responsive layout.",
+          "Track your balance, save your own payout details and request withdrawals with no fees or hidden charges.",
       },
-      { property: "og:title", content: "Dashboard — Cash Loading Portal" },
+      { property: "og:title", content: "Cash Loading Portal — Balances and Payouts" },
       {
         property: "og:description",
-        content: "Balance summary, payout activity and transaction history at a glance.",
+        content: "Track your balance, save payout details and request withdrawals — no fees.",
       },
     ],
   }),
-  component: Dashboard,
+  component: Landing,
 });
 
-function Dashboard() {
+function Landing() {
+  const { data: user, isLoading } = useAuthUser();
+
   return (
-    <AppShell title="Dashboard">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <StatTile value={formatUsd(account.balance)} label="Account Balance" tone="navy" />
-        <StatTile value={formatUsd(account.pendingWithdrawals)} label="Pending Withdrawals" tone="ember" />
-        <StatTile value={formatUsd(account.totalWithdrawals)} label="Total Withdrawals" tone="navy" />
-        <StatTile value={formatUsd(account.totalDeposits)} label="Total Deposits" tone="jade" />
-      </div>
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <TrendChart />
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-card sm:p-5">
-          <h2 className="text-base font-bold">Quick actions</h2>
-          <div className="mt-4 grid gap-3">
-            <Link
-              to="/withdraw"
-              className="rounded-xl bg-navy px-4 py-3 text-center text-sm font-bold text-navy-foreground transition-opacity hover:opacity-90"
-            >
-              Start a withdrawal
-            </Link>
-            <Link
-              to="/payment-address"
-              className="rounded-xl bg-secondary px-4 py-3 text-center text-sm font-bold transition-colors hover:bg-accent"
-            >
-              Payment address
-            </Link>
-            <Link
-              to="/transactions"
-              className="rounded-xl bg-secondary px-4 py-3 text-center text-sm font-bold transition-colors hover:bg-accent"
-            >
-              View transactions
-            </Link>
-          </div>
-          <dl className="mt-5 space-y-2 text-sm">
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">Member since</dt>
-              <dd className="font-semibold">{account.memberSince}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">Active cards</dt>
-              <dd className="font-semibold">{account.activeCards}</dd>
-            </div>
-          </dl>
+    <div className="min-h-screen">
+      <header className="bg-topbar text-topbar-foreground">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4">
+          <span className="truncate text-sm font-bold sm:text-base">Cash Loading Portal</span>
+          <Link
+            to={user ? "/dashboard" : "/auth"}
+            className="shrink-0 rounded-lg bg-card px-4 py-2 text-sm font-bold text-card-foreground"
+          >
+            {isLoading ? "…" : user ? "Dashboard" : "Sign in"}
+          </Link>
         </div>
-      </div>
+      </header>
 
-      <div className="mt-6 rounded-2xl border border-border bg-card p-4 shadow-card sm:p-5">
-        <h2 className="text-base font-bold">Recent activity</h2>
-        <ul className="mt-3 divide-y divide-border">
-          {activity.slice(0, 5).map((item) => (
-            <li key={item.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{item.label}</p>
-                <p className="text-xs text-muted-foreground">
-                  {item.id} · {item.date}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className="text-sm font-bold">
-                  {item.type === "deposit" ? "+" : "−"}
-                  {formatUsd(item.amount)}
-                </span>
-                <StatusBadge status={item.status} />
-              </div>
-            </li>
+      <main className="mx-auto max-w-5xl px-4 py-12 sm:py-20">
+        <h1 className="max-w-2xl text-3xl font-extrabold tracking-tight sm:text-5xl">
+          Your balance, payout details and withdrawals in one place.
+        </h1>
+        <p className="mt-4 max-w-xl text-base text-muted-foreground">
+          Save your own Cash App, bank or card payout details, request a withdrawal and follow its
+          status. No withdrawal fees, no service charges, nothing to pay upfront.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            to={user ? "/dashboard" : "/auth"}
+            className="rounded-xl bg-navy px-6 py-3 text-sm font-bold text-navy-foreground transition-opacity hover:opacity-90"
+          >
+            {user ? "Open dashboard" : "Create your account"}
+          </Link>
+        </div>
+
+        <div className="mt-14 grid gap-4 sm:grid-cols-3">
+          {[
+            { t: "Clear balance view", d: "Deposits, pending and completed payouts, always up to date." },
+            { t: "Your payout details", d: "Cash App, bank transfer or card — saved securely to your account." },
+            { t: "Tracked requests", d: "Every withdrawal shows as pending, approved, completed or rejected." },
+          ].map((c) => (
+            <div key={c.t} className="rounded-2xl border border-border bg-card p-5 shadow-card">
+              <h2 className="text-base font-bold">{c.t}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{c.d}</p>
+            </div>
           ))}
-        </ul>
-      </div>
-    </AppShell>
+        </div>
+      </main>
+    </div>
   );
 }

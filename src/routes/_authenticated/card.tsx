@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { account, formatUsd } from "@/lib/demo-data";
 
-export const Route = createFileRoute("/card")({
+export const Route = createFileRoute("/_authenticated/card")({
   head: () => ({
     meta: [
       { title: "Card — Cash Loading Portal" },

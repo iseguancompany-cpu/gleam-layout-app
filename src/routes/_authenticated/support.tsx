@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
 
-export const Route = createFileRoute("/support")({
+export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({
     meta: [
       { title: "Support and Privacy — Cash Loading Portal" },

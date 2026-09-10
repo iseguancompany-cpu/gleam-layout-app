@@ -10,101 +10,140 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CardRouteImport } from './routes/card'
-import { Route as ConnectBalanceRouteImport } from './routes/connect-balance'
-import { Route as PaymentAddressRouteImport } from './routes/payment-address'
-import { Route as PayoutsRouteImport } from './routes/payouts'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as SupportRouteImport } from './routes/support'
-import { Route as TransactionsRouteImport } from './routes/transactions'
-import { Route as WithdrawRouteImport } from './routes/withdraw'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedCardRouteImport } from './routes/_authenticated/card'
+import { Route as AuthenticatedConnectBalanceRouteImport } from './routes/_authenticated/connect-balance'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedPaymentAddressRouteImport } from './routes/_authenticated/payment-address'
+import { Route as AuthenticatedPayoutsRouteImport } from './routes/_authenticated/payouts'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
+import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
+import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticated/withdraw'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CardRoute = CardRouteImport.update({
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCardRoute = AuthenticatedCardRouteImport.update({
   id: '/card',
   path: '/card',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ConnectBalanceRoute = ConnectBalanceRouteImport.update({
-  id: '/connect-balance',
-  path: '/connect-balance',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedConnectBalanceRoute =
+  AuthenticatedConnectBalanceRouteImport.update({
+    id: '/connect-balance',
+    path: '/connect-balance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const PaymentAddressRoute = PaymentAddressRouteImport.update({
-  id: '/payment-address',
-  path: '/payment-address',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PayoutsRoute = PayoutsRouteImport.update({
+const AuthenticatedPaymentAddressRoute =
+  AuthenticatedPaymentAddressRouteImport.update({
+    id: '/payment-address',
+    path: '/payment-address',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPayoutsRoute = AuthenticatedPayoutsRouteImport.update({
   id: '/payouts',
   path: '/payouts',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const SupportRoute = SupportRouteImport.update({
+const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
   id: '/support',
   path: '/support',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const TransactionsRoute = TransactionsRouteImport.update({
-  id: '/transactions',
-  path: '/transactions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WithdrawRoute = WithdrawRouteImport.update({
+const AuthenticatedTransactionsRoute =
+  AuthenticatedTransactionsRouteImport.update({
+    id: '/transactions',
+    path: '/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWithdrawRoute = AuthenticatedWithdrawRouteImport.update({
   id: '/withdraw',
   path: '/withdraw',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/card': typeof CardRoute
-  '/connect-balance': typeof ConnectBalanceRoute
-  '/payment-address': typeof PaymentAddressRoute
-  '/payouts': typeof PayoutsRoute
-  '/profile': typeof ProfileRoute
-  '/support': typeof SupportRoute
-  '/transactions': typeof TransactionsRoute
-  '/withdraw': typeof WithdrawRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/card': typeof AuthenticatedCardRoute
+  '/connect-balance': typeof AuthenticatedConnectBalanceRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/payment-address': typeof AuthenticatedPaymentAddressRoute
+  '/payouts': typeof AuthenticatedPayoutsRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/support': typeof AuthenticatedSupportRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
+  '/withdraw': typeof AuthenticatedWithdrawRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/card': typeof CardRoute
-  '/connect-balance': typeof ConnectBalanceRoute
-  '/payment-address': typeof PaymentAddressRoute
-  '/payouts': typeof PayoutsRoute
-  '/profile': typeof ProfileRoute
-  '/support': typeof SupportRoute
-  '/transactions': typeof TransactionsRoute
-  '/withdraw': typeof WithdrawRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/card': typeof AuthenticatedCardRoute
+  '/connect-balance': typeof AuthenticatedConnectBalanceRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/payment-address': typeof AuthenticatedPaymentAddressRoute
+  '/payouts': typeof AuthenticatedPayoutsRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/support': typeof AuthenticatedSupportRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
+  '/withdraw': typeof AuthenticatedWithdrawRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/card': typeof CardRoute
-  '/connect-balance': typeof ConnectBalanceRoute
-  '/payment-address': typeof PaymentAddressRoute
-  '/payouts': typeof PayoutsRoute
-  '/profile': typeof ProfileRoute
-  '/support': typeof SupportRoute
-  '/transactions': typeof TransactionsRoute
-  '/withdraw': typeof WithdrawRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/card': typeof AuthenticatedCardRoute
+  '/_authenticated/connect-balance': typeof AuthenticatedConnectBalanceRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/payment-address': typeof AuthenticatedPaymentAddressRoute
+  '/_authenticated/payouts': typeof AuthenticatedPayoutsRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/support': typeof AuthenticatedSupportRoute
+  '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
+  '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
+    | '/reset-password'
     | '/card'
     | '/connect-balance'
+    | '/dashboard'
     | '/payment-address'
     | '/payouts'
     | '/profile'
@@ -114,8 +153,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
+    | '/reset-password'
     | '/card'
     | '/connect-balance'
+    | '/dashboard'
     | '/payment-address'
     | '/payouts'
     | '/profile'
@@ -125,26 +167,25 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/card'
-    | '/connect-balance'
-    | '/payment-address'
-    | '/payouts'
-    | '/profile'
-    | '/support'
-    | '/transactions'
-    | '/withdraw'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/card'
+    | '/_authenticated/connect-balance'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/payment-address'
+    | '/_authenticated/payouts'
+    | '/_authenticated/profile'
+    | '/_authenticated/support'
+    | '/_authenticated/transactions'
+    | '/_authenticated/withdraw'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CardRoute: typeof CardRoute
-  ConnectBalanceRoute: typeof ConnectBalanceRoute
-  PaymentAddressRoute: typeof PaymentAddressRoute
-  PayoutsRoute: typeof PayoutsRoute
-  ProfileRoute: typeof ProfileRoute
-  SupportRoute: typeof SupportRoute
-  TransactionsRoute: typeof TransactionsRoute
-  WithdrawRoute: typeof WithdrawRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -156,75 +197,125 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/card': {
-      id: '/card'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/card': {
+      id: '/_authenticated/card'
       path: '/card'
       fullPath: '/card'
-      preLoaderRoute: typeof CardRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedCardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/connect-balance': {
-      id: '/connect-balance'
+    '/_authenticated/connect-balance': {
+      id: '/_authenticated/connect-balance'
       path: '/connect-balance'
       fullPath: '/connect-balance'
-      preLoaderRoute: typeof ConnectBalanceRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedConnectBalanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/payment-address': {
-      id: '/payment-address'
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payment-address': {
+      id: '/_authenticated/payment-address'
       path: '/payment-address'
       fullPath: '/payment-address'
-      preLoaderRoute: typeof PaymentAddressRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedPaymentAddressRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/payouts': {
-      id: '/payouts'
+    '/_authenticated/payouts': {
+      id: '/_authenticated/payouts'
       path: '/payouts'
       fullPath: '/payouts'
-      preLoaderRoute: typeof PayoutsRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedPayoutsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/profile': {
-      id: '/profile'
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/support': {
-      id: '/support'
+    '/_authenticated/support': {
+      id: '/_authenticated/support'
       path: '/support'
       fullPath: '/support'
-      preLoaderRoute: typeof SupportRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/transactions': {
-      id: '/transactions'
+    '/_authenticated/transactions': {
+      id: '/_authenticated/transactions'
       path: '/transactions'
       fullPath: '/transactions'
-      preLoaderRoute: typeof TransactionsRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/withdraw': {
-      id: '/withdraw'
+    '/_authenticated/withdraw': {
+      id: '/_authenticated/withdraw'
       path: '/withdraw'
       fullPath: '/withdraw'
-      preLoaderRoute: typeof WithdrawRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedWithdrawRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCardRoute: typeof AuthenticatedCardRoute
+  AuthenticatedConnectBalanceRoute: typeof AuthenticatedConnectBalanceRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPaymentAddressRoute: typeof AuthenticatedPaymentAddressRoute
+  AuthenticatedPayoutsRoute: typeof AuthenticatedPayoutsRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
+  AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
+  AuthenticatedWithdrawRoute: typeof AuthenticatedWithdrawRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCardRoute: AuthenticatedCardRoute,
+  AuthenticatedConnectBalanceRoute: AuthenticatedConnectBalanceRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPaymentAddressRoute: AuthenticatedPaymentAddressRoute,
+  AuthenticatedPayoutsRoute: AuthenticatedPayoutsRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSupportRoute: AuthenticatedSupportRoute,
+  AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
+  AuthenticatedWithdrawRoute: AuthenticatedWithdrawRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CardRoute: CardRoute,
-  ConnectBalanceRoute: ConnectBalanceRoute,
-  PaymentAddressRoute: PaymentAddressRoute,
-  PayoutsRoute: PayoutsRoute,
-  ProfileRoute: ProfileRoute,
-  SupportRoute: SupportRoute,
-  TransactionsRoute: TransactionsRoute,
-  WithdrawRoute: WithdrawRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

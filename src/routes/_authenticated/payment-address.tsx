@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 
-export const Route = createFileRoute("/payment-address")({
+export const Route = createFileRoute("/_authenticated/payment-address")({
   head: () => ({
     meta: [
       { title: "Payment Address — Cash Loading Portal" },
