@@ -41,6 +41,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          detail: Json
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -56,6 +83,33 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      cash_loads: {
+        Row: {
+          admin_id: string
+          amount: number
+          created_at: string
+          id: string
+          note: string
+          user_id: string
+        }
+        Insert: {
+          admin_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -122,6 +176,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          balance: number
           country: string
           created_at: string
           email: string
@@ -132,6 +187,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          balance?: number
           country?: string
           created_at?: string
           email?: string
@@ -142,6 +198,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          balance?: number
           country?: string
           created_at?: string
           email?: string
@@ -225,6 +282,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_load_cash: {
+        Args: { _amount: number; _note?: string; _user_id: string }
+        Returns: number
+      }
+      admin_set_withdrawal_status: {
+        Args: {
+          _note?: string
+          _status: Database["public"]["Enums"]["withdrawal_status"]
+          _withdrawal_id: string
+        }
+        Returns: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          method_summary: string
+          method_type: Database["public"]["Enums"]["payout_type"]
+          payout_method_id: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
