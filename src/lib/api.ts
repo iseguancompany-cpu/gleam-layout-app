@@ -75,7 +75,7 @@ export function useAddPayoutMethod() {
     mutationFn: async (values: Record<string, unknown> & { type: PayoutType }) => {
       const { data, error } = await supabase
         .from("payout_methods")
-        .insert({ ...values, user_id: user!.id })
+        .insert({ ...values, user_id: user!.id } as never)
         .select("*")
         .single();
       if (error) throw error;
@@ -129,12 +129,13 @@ export function useCreateWithdrawal() {
         .single();
       if (error) throw error;
 
-      await supabase.from("activity_log").insert({
+      const { error: activityError } = await supabase.from("activity_log").insert({
         user_id: user!.id,
-        kind: "withdrawal",
-        description: `Withdrawal request via ${payoutLabels[values.method_type]}`,
+        kind: "withdrawal_request",
+        description: `Withdrawal requested via ${payoutLabels[values.method_type]}`,
         amount: values.amount,
       });
+      if (activityError) console.error(activityError);
       return data;
     },
     onSuccess: () => {
@@ -154,34 +155,32 @@ export function useActivity() {
         .from("activity_log")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(100);
       if (error) throw error;
       return data ?? [];
     },
   });
 }
 
-/** Available balance is derived from recorded activity — no fees are ever applied. */
-export function useBalance() {
-  const { data: activity = [] } = useActivity();
+/**
+ * Account overview. The balance is the authoritative value stored on the
+ * profile — only admin cash loads (add) and approved withdrawals (subtract the
+ * requested amount) ever change it. No fees are applied anywhere.
+ */
+export function useAccountSummary() {
+  const { data: profile } = useProfile();
   const { data: withdrawals = [] } = useWithdrawals();
 
-  const deposits = activity
-    .filter((a) => a.kind === "deposit")
-    .reduce((sum, a) => sum + Number(a.amount ?? 0), 0);
   const pending = withdrawals
-    .filter((w) => w.status === "pending" || w.status === "approved")
+    .filter((w) => w.status === "pending")
     .reduce((sum, w) => sum + Number(w.amount), 0);
-  const completed = withdrawals
-    .filter((w) => w.status === "completed")
+  const paidOut = withdrawals
+    .filter((w) => w.status === "approved" || w.status === "completed")
     .reduce((sum, w) => sum + Number(w.amount), 0);
 
-  return {
-    deposits,
-    pending,
-    completed,
-    available: deposits - pending - completed,
-  };
+  const balance = Number(profile?.balance ?? 0);
+
+  return { balance, pending, paidOut, available: balance - pending };
 }
 
 /* ---------------- Admin ---------------- */
@@ -218,6 +217,21 @@ export function useAdminWithdrawals() {
   });
 }
 
+export function useAdminActivity() {
+  return useQuery({
+    queryKey: ["admin-activity"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("activity_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
 export function useAdminPayoutMethods() {
   return useQuery({
     queryKey: ["admin-payout-methods"],
@@ -232,20 +246,81 @@ export function useAdminPayoutMethods() {
   });
 }
 
+export function useAdminCashLoads() {
+  return useQuery({
+    queryKey: ["admin-cash-loads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cash_loads")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+function invalidateAdmin(qc: ReturnType<typeof useQueryClient>) {
+  for (const key of [
+    "admin-withdrawals",
+    "admin-users",
+    "admin-activity",
+    "admin-cash-loads",
+    "withdrawals",
+    "activity",
+    "profile",
+  ]) {
+    qc.invalidateQueries({ queryKey: [key] });
+  }
+}
+
+/** Approve/decline a request. The database deducts the amount once, no fees. */
 export function useUpdateWithdrawalStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: WithdrawalStatus }) => {
-      const { error } = await supabase
-        .from("withdrawal_requests")
-        .update({ status })
-        .eq("id", id);
+    mutationFn: async ({
+      id,
+      status,
+      note,
+    }: {
+      id: string;
+      status: WithdrawalStatus;
+      note?: string;
+    }) => {
+      const { error } = await supabase.rpc("admin_set_withdrawal_status", {
+        _withdrawal_id: id,
+        _status: status,
+        _note: note ?? null,
+      });
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-withdrawals"] });
-      qc.invalidateQueries({ queryKey: ["withdrawals"] });
+    onSuccess: () => invalidateAdmin(qc),
+  });
+}
+
+/** Cash loading portal: admin adds the entered amount to a user's balance. */
+export function useLoadCash() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      amount,
+      note,
+    }: {
+      userId: string;
+      amount: number;
+      note?: string;
+    }) => {
+      const { data, error } = await supabase.rpc("admin_load_cash", {
+        _user_id: userId,
+        _amount: amount,
+        _note: note ?? "",
+      });
+      if (error) throw error;
+      return data as number;
     },
+    onSuccess: () => invalidateAdmin(qc),
   });
 }
 
