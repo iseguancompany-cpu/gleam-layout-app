@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
-import { account } from "@/lib/demo-data";
+import { useProfile, useUpdateProfile } from "@/lib/api";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -17,16 +17,25 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: Profile,
 });
 
-const field = "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring/40";
+const field =
+  "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring/40";
 const labelCls = "text-sm font-bold";
 
 function Profile() {
-  const [form, setForm] = useState({
-    name: account.name,
-    email: account.email,
-    country: account.country,
-    referrer: account.referrer,
-  });
+  const { data: profile, isLoading } = useProfile();
+  const update = useUpdateProfile();
+  const [form, setForm] = useState({ full_name: "", email: "", country: "United States", referrer: "" });
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        full_name: profile.full_name ?? "",
+        email: profile.email ?? "",
+        country: profile.country ?? "United States",
+        referrer: profile.referrer ?? "",
+      });
+    }
+  }, [profile]);
 
   return (
     <AppShell title="Profile">
@@ -34,17 +43,19 @@ function Profile() {
         className="max-w-xl space-y-5"
         onSubmit={(e) => {
           e.preventDefault();
-          toast.success("Profile saved");
+          update.mutate(form, {
+            onSuccess: () => toast.success("Profile saved"),
+            onError: (err) => toast.error(err instanceof Error ? err.message : "Could not save"),
+          });
         }}
       >
         <div className="flex items-center gap-4">
           <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-navy text-xl font-extrabold text-navy-foreground">
-            {form.name.charAt(0)}
+            {(form.full_name || form.email || "?").charAt(0).toUpperCase()}
           </div>
-          <label className="min-w-0 cursor-pointer rounded-xl bg-secondary px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent">
-            Choose file
-            <input type="file" className="hidden" />
-          </label>
+          <p className="text-sm text-muted-foreground">
+            {isLoading ? "Loading your details…" : "Keep your details up to date."}
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -55,8 +66,8 @@ function Profile() {
             id="name"
             required
             className={field}
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            value={form.full_name}
+            onChange={(e) => setForm({ ...form, full_name: e.target.value })}
           />
         </div>
 
@@ -92,7 +103,7 @@ function Profile() {
 
         <div className="space-y-2">
           <label className={labelCls} htmlFor="referrer">
-            Referrer<span className="text-destructive">*</span>
+            Referrer
           </label>
           <input
             id="referrer"
@@ -104,9 +115,10 @@ function Profile() {
 
         <button
           type="submit"
-          className="w-full rounded-xl bg-ember px-6 py-3 text-base font-extrabold text-ember-foreground transition-opacity hover:opacity-90 sm:w-auto"
+          disabled={update.isPending}
+          className="w-full rounded-xl bg-ember px-6 py-3 text-base font-extrabold text-ember-foreground transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
         >
-          Save Changes
+          {update.isPending ? "Saving…" : "Save Changes"}
         </button>
       </form>
     </AppShell>
