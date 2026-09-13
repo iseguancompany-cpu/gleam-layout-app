@@ -1,4 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   User,
@@ -13,13 +14,16 @@ import {
   Menu,
   X,
   Power,
+  ShieldCheck,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { account, formatUsd } from "@/lib/demo-data";
+import { formatUsd, useProfile, useAccountSummary } from "@/lib/api";
+import { useIsAdmin } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
-  { title: "Dashboard", to: "/", icon: LayoutDashboard },
+  { title: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { title: "Profile", to: "/profile", icon: User },
   { title: "Withdraw", to: "/withdraw", icon: ArrowDownToLine },
   { title: "Support and Privacy", to: "/support", icon: Info },
@@ -30,12 +34,31 @@ const navItems = [
   { title: "Card", to: "/card", icon: CreditCard },
 ] as const;
 
+function useSignOut() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  return async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
+}
+
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { data: isAdmin } = useIsAdmin();
+  const signOut = useSignOut();
+
+  const items = [
+    ...navItems,
+    ...(isAdmin ? [{ title: "Admin Dashboard", to: "/admin", icon: ShieldCheck } as const] : []),
+  ];
 
   return (
     <nav className="flex flex-col gap-2 p-4">
-      {navItems.map((item) => {
+      {items.map((item) => {
         const active = pathname === item.to;
         return (
           <Link
@@ -55,7 +78,10 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
       })}
       <button
         type="button"
-        onClick={onNavigate}
+        onClick={() => {
+          onNavigate?.();
+          void signOut();
+        }}
         className="flex items-center gap-3 rounded-xl bg-card px-4 py-3 text-sm font-semibold shadow-card transition-colors hover:bg-accent"
       >
         <LogOut className="h-4 w-4 shrink-0" />
@@ -66,10 +92,11 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function BalancePanel() {
+  const { balance } = useAccountSummary();
   return (
     <div className="border-b border-border/60 px-6 py-6 text-center">
       <p className="text-sm text-muted-foreground">My Balance</p>
-      <p className="mt-1 text-3xl font-extrabold tracking-tight">{formatUsd(account.balance)}</p>
+      <p className="mt-1 text-3xl font-extrabold tracking-tight">{formatUsd(balance)}</p>
     </div>
   );
 }
@@ -77,10 +104,15 @@ function BalancePanel() {
 export function AppShell({ title, children }: { title: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { data: profile } = useProfile();
+  const { balance } = useAccountSummary();
+  const signOut = useSignOut();
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  const displayName = profile?.full_name?.trim() || profile?.email || "My account";
 
   return (
     <div className="min-h-screen w-full">
@@ -96,15 +128,16 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
           </button>
           <div className="flex min-w-0 items-center gap-2">
             <User className="hidden h-5 w-5 shrink-0 lg:block" />
-            <span className="truncate text-sm font-bold sm:text-base">{account.name}</span>
+            <span className="truncate text-sm font-bold sm:text-base">{displayName}</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm font-semibold sm:inline">
-              Balance: ${account.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              Balance: {formatUsd(balance)}
             </span>
             <button
               type="button"
               aria-label="Log out"
+              onClick={() => void signOut()}
               className="rounded-md p-1 transition-opacity hover:opacity-70"
             >
               <Power className="h-5 w-5" />
