@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/admin/approvals")({
       },
     ],
   }),
-  component: AdminApprovals;
+  component: AdminApprovals,
 });
 
 const filters: (WithdrawalStatus | "all")[] = ["pending", "approved", "completed", "rejected", "all"];

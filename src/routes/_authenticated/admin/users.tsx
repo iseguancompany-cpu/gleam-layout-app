@@ -58,8 +58,7 @@ function AdminUsers() {
         <ul className="mt-5 space-y-3">
           {filtered.map((u) => {
             const open = openId === u.id;
-            const userMethods = methods.filter((m) => m.user_id === u.id) as PayoutMethodRow[] &
-              typeof methods;
+            const userMethods = methods.filter((m) => m.user_id === u.id) as PayoutMethodRow[];
             const userWithdrawals = withdrawals.filter((w) => w.user_id === u.id);
             return (
               <li key={u.id} className="rounded-2xl border border-border bg-card p-4 shadow-card">
