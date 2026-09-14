@@ -291,7 +291,7 @@ export function useUpdateWithdrawalStatus() {
       const { error } = await supabase.rpc("admin_set_withdrawal_status", {
         _withdrawal_id: id,
         _status: status,
-        _note: note ?? null,
+        _note: note ?? "",
       });
       if (error) throw error;
     },

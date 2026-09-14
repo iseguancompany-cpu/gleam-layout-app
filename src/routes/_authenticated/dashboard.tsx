@@ -41,7 +41,8 @@ function buildTrend(rows: { created_at: string; amount: number | null; kind: str
         new Date(now.getFullYear(), now.getMonth() - (5 - i), 1).getMonth() === d.getMonth() &&
         new Date(now.getFullYear(), now.getMonth() - (5 - i), 1).getFullYear() === d.getFullYear(),
     );
-    if (idx >= 0) months[idx].value += Math.abs(Number(row.amount ?? 0));
+    const bucket = idx >= 0 ? months[idx] : undefined;
+    if (bucket) bucket.value += Math.abs(Number(row.amount ?? 0));
   }
   return months;
 }

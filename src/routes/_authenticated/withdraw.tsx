@@ -52,26 +52,26 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
         e.preventDefault();
         const base = {
           type,
-          label: values.label ?? "",
-          holder_name: values.holder_name ?? "",
+          label: values["label"] ?? "",
+          holder_name: values["holder_name"] ?? "",
         };
         const payload =
           type === "cashapp"
-            ? { ...base, cashtag: values.cashtag ?? "", contact_email: values.contact_email ?? null }
+            ? { ...base, cashtag: values["cashtag"] ?? "", contact_email: values["contact_email"] ?? null }
             : type === "bank"
               ? {
                   ...base,
-                  bank_name: values.bank_name ?? "",
-                  account_number_last4: last4(values.account_number ?? ""),
-                  bank_identifier: values.bank_identifier ?? null,
-                  bank_country: values.bank_country ?? null,
-                  bank_notes: values.bank_notes ?? null,
+                  bank_name: values["bank_name"] ?? "",
+                  account_number_last4: last4(values["account_number"] ?? ""),
+                  bank_identifier: values["bank_identifier"] ?? null,
+                  bank_country: values["bank_country"] ?? null,
+                  bank_notes: values["bank_notes"] ?? null,
                 }
               : {
                   ...base,
-                  card_last4: last4(values.card_number ?? ""),
-                  card_expiry: values.card_expiry ?? "",
-                  billing_zip: values.billing_zip ?? "",
+                  card_last4: last4(values["card_number"] ?? ""),
+                  card_expiry: values["card_expiry"] ?? "",
+                  billing_zip: values["billing_zip"] ?? "",
                 };
         add.mutate(payload, {
           onSuccess: () => {
@@ -100,14 +100,14 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
 
       <div className="space-y-2">
         <label className={labelCls}>Nickname</label>
-        <input className={field} placeholder="My main payout" value={values.label ?? ""} onChange={set("label")} />
+        <input className={field} placeholder="My main payout" value={values["label"] ?? ""} onChange={set("label")} />
       </div>
       <div className="space-y-2">
         <label className={labelCls}>Account holder name</label>
         <input
           required
           className={field}
-          value={values.holder_name ?? ""}
+          value={values["holder_name"] ?? ""}
           onChange={set("holder_name")}
         />
       </div>
@@ -116,11 +116,11 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
         <>
           <div className="space-y-2">
             <label className={labelCls}>$Cashtag</label>
-            <input required className={field} placeholder="$yourtag" value={values.cashtag ?? ""} onChange={set("cashtag")} />
+            <input required className={field} placeholder="$yourtag" value={values["cashtag"] ?? ""} onChange={set("cashtag")} />
           </div>
           <div className="space-y-2">
             <label className={labelCls}>Contact email (optional)</label>
-            <input type="email" className={field} value={values.contact_email ?? ""} onChange={set("contact_email")} />
+            <input type="email" className={field} value={values["contact_email"] ?? ""} onChange={set("contact_email")} />
           </div>
         </>
       )}
@@ -129,7 +129,7 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
         <>
           <div className="space-y-2">
             <label className={labelCls}>Bank name</label>
-            <input required className={field} value={values.bank_name ?? ""} onChange={set("bank_name")} />
+            <input required className={field} value={values["bank_name"] ?? ""} onChange={set("bank_name")} />
           </div>
           <div className="space-y-2">
             <label className={labelCls}>Account number</label>
@@ -137,7 +137,7 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
               required
               inputMode="numeric"
               className={field}
-              value={values.account_number ?? ""}
+              value={values["account_number"] ?? ""}
               onChange={set("account_number")}
             />
             <p className="text-xs text-muted-foreground">Only the last 4 digits are stored.</p>
@@ -145,11 +145,11 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className={labelCls}>Routing / SWIFT</label>
-              <input className={field} value={values.bank_identifier ?? ""} onChange={set("bank_identifier")} />
+              <input className={field} value={values["bank_identifier"] ?? ""} onChange={set("bank_identifier")} />
             </div>
             <div className="space-y-2">
               <label className={labelCls}>Bank country</label>
-              <input className={field} value={values.bank_country ?? ""} onChange={set("bank_country")} />
+              <input className={field} value={values["bank_country"] ?? ""} onChange={set("bank_country")} />
             </div>
           </div>
         </>
@@ -163,7 +163,7 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
               required
               inputMode="numeric"
               className={field}
-              value={values.card_number ?? ""}
+              value={values["card_number"] ?? ""}
               onChange={set("card_number")}
             />
             <p className="text-xs text-muted-foreground">
@@ -173,11 +173,11 @@ function AddMethodForm({ onDone }: { onDone: () => void }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className={labelCls}>Expiry (MM/YY)</label>
-              <input required className={field} placeholder="09/29" value={values.card_expiry ?? ""} onChange={set("card_expiry")} />
+              <input required className={field} placeholder="09/29" value={values["card_expiry"] ?? ""} onChange={set("card_expiry")} />
             </div>
             <div className="space-y-2">
               <label className={labelCls}>Billing ZIP</label>
-              <input className={field} value={values.billing_zip ?? ""} onChange={set("billing_zip")} />
+              <input className={field} value={values["billing_zip"] ?? ""} onChange={set("billing_zip")} />
             </div>
           </div>
         </>
