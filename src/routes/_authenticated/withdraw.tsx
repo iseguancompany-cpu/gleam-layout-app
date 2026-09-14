@@ -381,9 +381,18 @@ function Withdraw() {
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!method) return toast.error("Choose a payout method first");
-            if (numericAmount < min) return toast.error(`Minimum withdrawal is ${formatUsd(min)}`);
-            if (numericAmount > available) return toast.error("Amount exceeds your available balance");
+            if (!method) {
+              toast.error("Choose a payout method first");
+              return;
+            }
+            if (numericAmount < min) {
+              toast.error(`Minimum withdrawal is ${formatUsd(min)}`);
+              return;
+            }
+            if (numericAmount > available) {
+              toast.error("Amount exceeds your available balance");
+              return;
+            }
             setReview(true);
           }}
         >
