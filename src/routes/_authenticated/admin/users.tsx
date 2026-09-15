@@ -1,3 +1,4 @@
+```tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -17,11 +18,6 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
       {
         name: "description",
         content: "Browse accounts and edit account details, verification and account status.",
-      },
-      { property: "og:title", content: "User Management — Cash Loading" },
-      {
-        property: "og:description",
-        content: "Browse accounts and edit account details and status.",
       },
     ],
   }),
@@ -48,7 +44,7 @@ type UserRow = {
 
 function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void }) {
   const save = useAdminUpdateUser();
-  const [values, setValues] = useState<AdminUserEdit>({
+  const [values, setValues] = useState({
     full_name: user.full_name ?? "",
     phone: user.phone ?? "",
     email: user.email ?? "",
@@ -58,7 +54,7 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
     admin_notes: user.admin_notes ?? "",
   });
 
-  useEffect(() => {
+useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -66,13 +62,11 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
+const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
 
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
-      <form
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-card p-5 shadow-card"
-        onSubmit={(e) => {
+return (
+    
+       {
           e.preventDefault();
           save.mutate(
             { id: user.id, values },
@@ -87,168 +81,198 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
           );
         }}
       >
-        <h2 className="text-lg font-extrabold">Edit User Details</h2>
+        
+          Edit User Details
+          
+            ✕
+          
+        
 
-        <div className="mt-4 space-y-3">
-          <div className="space-y-1">
-            <label className={labelCls}>Name</label>
-            <input
-              className={field}
-              value={values.full_name}
-              onChange={(e) => set("full_name")(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <label className={labelCls}>Phone</label>
-            <input
-              className={field}
-              value={values.phone}
-              onChange={(e) => set("phone")(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <label className={labelCls}>Email</label>
-            <input
-              type="email"
-              className={field}
-              value={values.email}
-              onChange={(e) => set("email")(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <label className={labelCls}>User ID</label>
-            <input readOnly className={`${field} text-muted-foreground`} value={user.id} />
-          </div>
-          <div className="space-y-1">
-            <label className={labelCls}>ID Verification Status</label>
-            <select
-              className={field}
-              value={values.id_verification_status}
-              onChange={(e) => set("id_verification_status")(e.target.value)}
-            >
-              {verificationOptions.map((o) => (
-                <option key={o} value={o}>
-                  {o.charAt(0).toUpperCase() + o.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className={labelCls}>Payment Address</label>
-            <input
-              className={field}
-              placeholder="Cashtag, bank or card destination"
-              value={values.payment_address}
-              onChange={(e) => set("payment_address")(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <span className={labelCls}>Account Status</span>
-            <div className="flex gap-4 pt-1">
-              {["active", "suspended"].map((s) => (
-                <label key={s} className="flex items-center gap-2 text-sm font-semibold">
-                  <input
-                    type="radio"
-                    name="account_status"
-                    value={s}
-                    checked={values.account_status === s}
-                    onChange={() => set("account_status")(s)}
-                  />
-                  {s === "active" ? "Active" : "Suspended"}
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className={labelCls}>Account Notes</label>
-            <textarea
-              rows={3}
-              className={field}
-              value={values.admin_notes}
-              onChange={(e) => set("admin_notes")(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="mt-5 flex gap-3">
-          <button
-            type="submit"
-            disabled={save.isPending}
-            className="rounded-xl bg-sky px-5 py-2.5 text-sm font-bold text-sky-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {save.isPending ? "Saving…" : "Save Changes"}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl bg-secondary px-5 py-2.5 text-sm font-bold transition-colors hover:bg-accent"
-          >
-            Close
-          </button>
-        </div>
-      </form>
+    <div className="mt-4 space-y-3">
+      <div className="space-y-1">
+        <label className={labelCls}>Name</label>
+        <input
+          className={field}
+          value={values.full_name}
+          onChange={(e) => set("full_name")(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1">
+        <label className={labelCls}>Phone</label>
+        <input
+          className={field}
+          value={values.phone}
+          onChange={(e) => set("phone")(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1">
+[9/15/2026 12:18 PM] Lovable:         <label className={labelCls}>Email</label>
+        <input
+          type="email"
+          className={field}
+          value={values.email}
+          onChange={(e) => set("email")(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1">
+        <label className={labelCls}>User ID</label>
+        <input readOnly className={`${field} text-muted-foreground`} value={user.id} />
+      </div>
+      <div className="space-y-1">
+        <label className={labelCls}>ID Verification Status</label>
+        <select
+          className={field}
+          value={values.id_verification_status}
+          onChange={(e) => set("id_verification_status")(e.target.value)}
+        >
+          {verificationOptions.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt.charAt(0).toUpperCase() + opt.slice(1)}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="space-y-1">
+        <label className={labelCls}>Payment Address</label>
+        <input
+          className={field}
+          placeholder="e.g. $cashtag or wallet"
+          value={values.payment_address}
+          onChange={(e) => set("payment_address")(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1">
+        <label className={labelCls}>Account Status</label>
+        <select
+          className={field}
+          value={values.account_status}
+          onChange={(e) => set("account_status")(e.target.value)}
+        >
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+        </select>
+      </div>
+      <div className="space-y-1">
+        <label className={labelCls}>Admin Notes</label>
+        <textarea
+          className={`${field} min-h-[70px] resize-none`}
+          value={values.admin_notes}
+          onChange={(e) => set("admin_notes")(e.target.value)}
+        />
+      </div>
     </div>
-  );
+
+    <div className="mt-5 flex items-center justify-end gap-2">
+      <button
+        type="button"
+        onClick={onClose}
+        className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary"
+      >
+        Close
+      </button>
+      <button
+        type="submit"
+        disabled={save.isPending}
+        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+      >
+        {save.isPending ? "Saving…" : "Save Changes"}
+      </button>
+    </div>
+  </form>
+</div>
+
+);
 }
 
 function AdminUsers() {
-  const { data: users = [], isPending } = useAdminUsers();
+  const { data: users, isPending } = useAdminUsers();
   const [query, setQuery] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
-  const filtered = useMemo(() => {
+const filteredUsers = useMemo(() => {
+    if (!users) return [];
     const q = query.trim().toLowerCase();
     if (!q) return users;
     return users.filter(
-      (u) => u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
+      (u) =>
+        u.full_name?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
+        u.phone?.toLowerCase().includes(q),
     );
   }, [users, query]);
 
-  const editing = (users as UserRow[]).find((u) => u.id === editingId) ?? null;
+return (
+    
+      
+        
+          Users
+           setQuery(e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+          />
+        
 
-  return (
-    <AdminShell title="User Management">
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search by name or email"
-        className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring/40"
-      />
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border text-xs uppercase text-muted-foreground">
+[9/15/2026 12:18 PM] Lovable:             <th className="px-3 py-2 font-semibold">NAME</th>
+            <th className="px-3 py-2 font-semibold">EMAIL</th>
+            <th className="px-3 py-2 font-semibold">PHONE</th>
+            <th className="px-3 py-2 font-semibold">MORE</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {isPending ? (
+            <tr>
+              <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                Loading users...
+              </td>
+            </tr>
+          ) : filteredUsers.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                No users found
+              </td>
+            </tr>
+          ) : (
+            filteredUsers.map((user) => (
+              <tr key={user.id} className="hover:bg-secondary/40">
+                <td className="px-3 py-3 font-medium">{user.full_name || "Unnamed"}</td>
+                <td className="px-3 py-3 text-muted-foreground">{user.email || "—"}</td>
+                <td className="px-3 py-3 text-muted-foreground">{user.phone || "—"}</td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedUser(user)}
+                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+                    >
+                      View User
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toast.info("User deletion is disabled");
+                      }}
+                      className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700"
+                    >
+                      Delete User
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
 
-      {isPending ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">Loading accounts…</p>
-      ) : filtered.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">
-          No accounts match that search.
-        </p>
-      ) : (
-        <ul className="mt-5 divide-y divide-border rounded-2xl border border-border bg-card">
-          {(filtered as UserRow[]).map((u) => (
-            <li
-              key={u.id}
-              className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold">{u.full_name || "Unnamed account"}</p>
-                <p className="truncate text-xs text-muted-foreground">{u.email}</p>
-                <p className="mt-1 text-xs font-semibold text-muted-foreground">
-                  {formatUsd(Number(u.balance ?? 0))}
-                  {u.account_status === "suspended" ? " · Suspended" : ""}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingId(u.id)}
-                className="shrink-0 rounded-lg bg-sky px-4 py-2 text-sm font-bold text-sky-foreground transition-opacity hover:opacity-90"
-              >
-                View
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+    {selectedUser && (
+      <EditUserCard user={selectedUser} onClose={() => setSelectedUser(null)} />
+    )}
+  </div>
+</AdminShell>
 
-      {editing && <EditUserCard user={editing} onClose={() => setEditingId(null)} />}
-    </AdminShell>
-  );
+);
 }
+```
