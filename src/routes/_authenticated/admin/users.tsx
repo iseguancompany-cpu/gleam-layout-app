@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 import { AdminShell } from "@/components/AdminShell";
 import {
-  formatUsd,
   useAdminUpdateUser,
   useAdminUsers,
   type AdminUserEdit,
@@ -35,7 +34,6 @@ type UserRow = {
   full_name: string;
   email: string;
   phone?: string | null;
-  balance: number | string;
   id_verification_status?: string | null;
   payment_address?: string | null;
   account_status?: string | null;
@@ -66,7 +64,8 @@ const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s,
 
 return (
     
-       {
+       e.stopPropagation()}
+        onSubmit={(e) => {
           e.preventDefault();
           save.mutate(
             { id: user.id, values },
@@ -88,7 +87,7 @@ return (
           
         
 
-    <div className="mt-4 space-y-3">
+    <div className="mt-4 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
       <div className="space-y-1">
         <label className={labelCls}>Name</label>
         <input
@@ -106,7 +105,7 @@ return (
         />
       </div>
       <div className="space-y-1">
-[9/15/2026 12:18 PM] Lovable:         <label className={labelCls}>Email</label>
+        <label className={labelCls}>Email</label>
         <input
           type="email"
           className={field}
@@ -156,13 +155,14 @@ return (
         <label className={labelCls}>Admin Notes</label>
         <textarea
           className={`${field} min-h-[70px] resize-none`}
+          placeholder="Internal notes about this user"
           value={values.admin_notes}
           onChange={(e) => set("admin_notes")(e.target.value)}
         />
       </div>
     </div>
 
-    <div className="mt-5 flex items-center justify-end gap-2">
+    <div className="mt-5 flex justify-end gap-2 border-t border-border pt-4">
       <button
         type="button"
         onClick={onClose}
@@ -173,9 +173,9 @@ return (
       <button
         type="submit"
         disabled={save.isPending}
-        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+        className="rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 disabled:opacity-50"
       >
-        {save.isPending ? "Saving…" : "Save Changes"}
+        {save.isPending ? "Saving..." : "Save Changes"}
       </button>
     </div>
   </form>
@@ -185,90 +185,114 @@ return (
 }
 
 function AdminUsers() {
-  const { data: users, isPending } = useAdminUsers();
-  const [query, setQuery] = useState("");
-  const [selectedUser, setSelectedUser] = useState(null);
+  const { data: users = [], isLoading, error } = useAdminUsers();
+  const [search, setSearch] = useState("");
+  const [activeUser, setActiveUser] = useState(null);
 
-const filteredUsers = useMemo(() => {
-    if (!users) return [];
-    const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(
-      (u) =>
-        u.full_name?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q) ||
-        u.phone?.toLowerCase().includes(q),
+const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return users as unknown as UserRow[];
+    return (users as unknown as UserRow[]).filter((u) =>
+      (u.full_name ?? "").toLowerCase().includes(q) ||
+      (u.email ?? "").toLowerCase().includes(q) ||
+      (u.phone ?? "").toLowerCase().includes(q)
     );
-  }, [users, query]);
-
-return (
-    
-      
-        
-          Users
-           setQuery(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
-          />
-        
-
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-border text-xs uppercase text-muted-foreground">
-[9/15/2026 12:18 PM] Lovable:             <th className="px-3 py-2 font-semibold">NAME</th>
-            <th className="px-3 py-2 font-semibold">EMAIL</th>
-            <th className="px-3 py-2 font-semibold">PHONE</th>
-            <th className="px-3 py-2 font-semibold">MORE</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {isPending ? (
-            <tr>
-              <td colSpan={4} className="py-8 text-center text-muted-foreground">
-                Loading users...
-              </td>
-            </tr>
-          ) : filteredUsers.length === 0 ? (
-            <tr>
-              <td colSpan={4} className="py-8 text-center text-muted-foreground">
-                No users found
-              </td>
-            </tr>
-          ) : (
-            filteredUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-secondary/40">
-                <td className="px-3 py-3 font-medium">{user.full_name || "Unnamed"}</td>
-                <td className="px-3 py-3 text-muted-foreground">{user.email || "—"}</td>
-                <td className="px-3 py-3 text-muted-foreground">{user.phone || "—"}</td>
-                <td className="px-3 py-3">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedUser(user)}
-                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
-                    >
-                      View User
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toast.info("User deletion is disabled");
-                      }}
-                      className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700"
-                    >
-                      Delete User
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
+  }, [users, search]);
+          <div className="space-y-3 md:hidden">
+          {filtered.map((u) => (
+            <div key={u.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
+              <div className="font-bold text-foreground">
+                {u.full_name || "Unnamed user"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">Email: </span>
+                {u.email || "—"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">Phone: </span>
+                {u.phone || "—"}
+              </div>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveUser(u)}
+                  className="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700"
+                >
+                  View User
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toast.info("User deletion is protected.")}
+                  className="flex-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                >
+                  Delete User
+                </button>
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <div className="py-6 text-center text-sm text-muted-foreground">No users found.</div>
           )}
-        </tbody>
-      </table>
-    </div>
+        </div>
 
-    {selectedUser && (
-      <EditUserCard user={selectedUser} onClose={() => setSelectedUser(null)} />
+        {/* Wide / Horizontal View: Table matching your screenshot */}
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-border bg-muted/40 text-xs font-bold uppercase text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3">NAME</th>
+                <th className="px-4 py-3">EMAIL</th>
+                <th className="px-4 py-3">PHONE</th>
+                <th className="px-4 py-3 text-right">MORE</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filtered.map((u) => (
+                <tr key={u.id} className="hover:bg-muted/20">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium">
+                    {u.full_name || "Unnamed user"}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                    {u.email || "—"}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                    {u.phone || "—"}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveUser(u)}
+                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700"
+                      >
+                        View User
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toast.info("User deletion is protected.")}
+                        className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                      >
+                        Delete User
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+                            {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
+                    No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
+
+    {activeUser && (
+      <EditUserCard user={activeUser} onClose={() => setActiveUser(null)} />
     )}
   </div>
 </AdminShell>
