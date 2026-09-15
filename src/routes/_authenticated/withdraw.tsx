@@ -214,7 +214,13 @@ function Withdraw() {
   const [selected, setSelected] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [review, setReview] = useState(false);
-  const [done, setDone] = useState<{ amount: number; summary: string } | null>(null);
+  const [done, setDone] = useState<{
+    amount: number;
+    summary: string;
+    id: string;
+    status: string;
+    createdAt: string;
+  } | null>(null);
 
   const method = (methods as PayoutMethodRow[]).find((m) => m.id === selected) ?? null;
   const numericAmount = Number(amount) || 0;
@@ -229,9 +235,36 @@ function Withdraw() {
             <Check className="h-8 w-8" />
           </div>
           <h2 className="mt-4 text-2xl font-extrabold">Withdrawal Placed Successfully</h2>
-          <div className="mt-6 rounded-xl border border-border p-4 text-center text-sm">
-            Your withdrawal of {formatUsd(done.amount)} via {done.summary} has been placed. You will see it
-            under Recent Payouts while it is reviewed.
+          <div className="mt-6 space-y-4 rounded-xl border border-border p-4 text-sm">
+            <p className="text-center font-semibold">
+              Your withdrawal of {formatUsd(done.amount)} has been placed successfully.
+            </p>
+            <dl className="space-y-2">
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Request ID</dt>
+                <dd className="font-mono text-xs font-bold">{done.id}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Status</dt>
+                <dd className="font-bold capitalize">{done.status}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Method</dt>
+                <dd className="font-semibold">{done.summary}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Recorded</dt>
+                <dd className="font-semibold">
+                  {new Date(done.createdAt).toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </dd>
+              </div>
+            </dl>
           </div>
           <button
             type="button"
@@ -284,7 +317,14 @@ function Withdraw() {
                     payout_method_id: method.id,
                   },
                   {
-                    onSuccess: () => setDone({ amount: numericAmount, summary: summarizeMethod(method) }),
+                    onSuccess: (row) =>
+                      setDone({
+                        amount: Number(row.amount),
+                        summary: row.method_summary || summarizeMethod(method),
+                        id: row.id,
+                        status: row.status,
+                        createdAt: row.created_at,
+                      }),
                     onError: (err) =>
                       toast.error(err instanceof Error ? err.message : "Could not place withdrawal"),
                   },
