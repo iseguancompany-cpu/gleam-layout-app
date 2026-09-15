@@ -1,41 +1,67 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Menu, X } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { useIsAdmin } from "@/lib/auth";
 
-const tabs = [
-  { title: "Overview", to: "/admin" },
+const navItems = [
   { title: "Users", to: "/admin/users" },
-  { title: "Approvals", to: "/admin/approvals" },
-  { title: "Cash Loading", to: "/admin/cash" },
-  { title: "Customer Care", to: "/admin/support" },
+  { title: "Transactions", to: "/admin/approvals" },
+  { title: "Wallet Address", to: "/admin/cash" },
+  { title: "Supports", to: "/admin/support" },
+  { title: "Control Panel", to: "/admin" },
 ] as const;
 
 export function AdminShell({ title, children }: { title: string; children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: isAdmin, isPending } = useIsAdmin();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <AppShell title={title}>
-      <div className="flex flex-wrap gap-2">
-        {tabs.map((tab) => {
-          const active = pathname === tab.to;
+      {/* Top Admin Header */}
+      <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3 rounded-xl mb-4">
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-1 rounded-md hover:bg-secondary text-foreground"
+          aria-label="Toggle Navigation"
+        >
+          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+        <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+          ADMIN PANEL
+        </span>
+      </div>
+
+      {/* Vertical Navigation Links */}
+      <nav
+        className={`${
+          mobileMenuOpen ? "block" : "hidden md:block"
+        } mb-6 space-y-1 rounded-xl border border-border bg-card p-2 shadow-sm`}
+      >
+        {navItems.map((item) => {
+          const active = pathname === item.to;
           return (
             <Link
-              key={tab.to}
-              to={tab.to}
-              className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${
-                active ? "bg-navy text-navy-foreground" : "bg-secondary hover:bg-accent"
+              key={item.to}
+              to={item.to}
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+                active
+                  ? "bg-emerald-100 text-emerald-900 font-bold"
+                  : "text-foreground hover:bg-secondary"
               }`}
             >
-              {tab.title}
+              {item.title}
             </Link>
           );
         })}
-      </div>
+      </nav>
 
-      <div className="mt-5">
+      {/* Main Content Area */}
+      <div>
         {isPending ? (
           <p className="py-10 text-center text-sm text-muted-foreground">Checking access…</p>
         ) : isAdmin ? (
