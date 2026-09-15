@@ -217,47 +217,9 @@ function AdminUsers() {
           <div className="py-6 text-center text-sm text-destructive">Could not load users.</div>
         ) : (
           <>
-            {/* Narrow / Mobile View: Cards */}
-            <div className="space-y-3 md:hidden">
-              {filtered.map((u) => (
-                <div key={u.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
-                  <div className="font-bold text-foreground">
-                    {u.full_name || "Unnamed user"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">Email: </span>
-                    {u.email || "—"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">Phone: </span>
-                    {u.phone || "—"}
-                  </div>
-                  <div className="pt-2 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveUser(u)}
-                      className="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700"
-                    >
-                      View User
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toast.info("User deletion is protected.")}
-                      className="flex-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
-                    >
-                      Delete User
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {filtered.length === 0 && (
-                <div className="py-6 text-center text-sm text-muted-foreground">No users found.</div>
-              )}
-            </div>
-
-            {/* Wide / Horizontal View: Table matching your screenshot */}
-            <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card">
-              <table className="w-full text-left text-sm">
+            {/* Table view on all screen sizes; scrolls horizontally on narrow viewports */}
+            <div className="overflow-x-auto rounded-xl border border-border bg-card">
+              <table className="w-full min-w-[640px] text-left text-sm">
                 <thead className="border-b-2 border-foreground/80 text-xs font-black uppercase tracking-wide text-foreground">
                   <tr>
                     <th className="px-4 py-3">Name</th>
