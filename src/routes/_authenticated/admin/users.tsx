@@ -1,137 +1,254 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { AdminShell } from "@/components/AdminShell";
-import { formatUsd, useAdminPayoutMethods, useAdminUsers, useAdminWithdrawals } from "@/lib/api";
-import { methodTitle, summarizeMethod, type PayoutMethodRow } from "@/lib/payout";
+import {
+  formatUsd,
+  useAdminUpdateUser,
+  useAdminUsers,
+  type AdminUserEdit,
+} from "@/lib/api";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   head: () => ({
     meta: [
-      { title: "User Management — Cash Loading Portal" },
+      { title: "User Management — Cash Loading" },
       {
         name: "description",
-        content: "Search accounts, review balances, roles, payout methods and request history.",
+        content: "Browse accounts and edit account details, verification and account status.",
       },
-      { property: "og:title", content: "User Management — Cash Loading Portal" },
+      { property: "og:title", content: "User Management — Cash Loading" },
       {
         property: "og:description",
-        content: "Search accounts and review balances, roles and payout methods.",
+        content: "Browse accounts and edit account details and status.",
       },
     ],
   }),
   component: AdminUsers,
 });
 
+const field =
+  "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40";
+const labelCls = "text-xs font-bold uppercase text-muted-foreground";
+
+const verificationOptions = ["unverified", "pending", "verified", "rejected"] as const;
+
+type UserRow = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string | null;
+  balance: number | string;
+  id_verification_status?: string | null;
+  payment_address?: string | null;
+  account_status?: string | null;
+  admin_notes?: string | null;
+};
+
+function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void }) {
+  const save = useAdminUpdateUser();
+  const [values, setValues] = useState<AdminUserEdit>({
+    full_name: user.full_name ?? "",
+    phone: user.phone ?? "",
+    email: user.email ?? "",
+    id_verification_status: user.id_verification_status ?? "unverified",
+    payment_address: user.payment_address ?? "",
+    account_status: user.account_status ?? "active",
+    admin_notes: user.admin_notes ?? "",
+  });
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
+      <form
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-card p-5 shadow-card"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save.mutate(
+            { id: user.id, values },
+            {
+              onSuccess: () => {
+                toast.success("Changes saved");
+                onClose();
+              },
+              onError: (err) =>
+                toast.error(err instanceof Error ? err.message : "Could not save changes"),
+            },
+          );
+        }}
+      >
+        <h2 className="text-lg font-extrabold">Edit User Details</h2>
+
+        <div className="mt-4 space-y-3">
+          <div className="space-y-1">
+            <label className={labelCls}>Name</label>
+            <input
+              className={field}
+              value={values.full_name}
+              onChange={(e) => set("full_name")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Phone</label>
+            <input
+              className={field}
+              value={values.phone}
+              onChange={(e) => set("phone")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Email</label>
+            <input
+              type="email"
+              className={field}
+              value={values.email}
+              onChange={(e) => set("email")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>User ID</label>
+            <input readOnly className={`${field} text-muted-foreground`} value={user.id} />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>ID Verification Status</label>
+            <select
+              className={field}
+              value={values.id_verification_status}
+              onChange={(e) => set("id_verification_status")(e.target.value)}
+            >
+              {verificationOptions.map((o) => (
+                <option key={o} value={o}>
+                  {o.charAt(0).toUpperCase() + o.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Payment Address</label>
+            <input
+              className={field}
+              placeholder="Cashtag, bank or card destination"
+              value={values.payment_address}
+              onChange={(e) => set("payment_address")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <span className={labelCls}>Account Status</span>
+            <div className="flex gap-4 pt-1">
+              {["active", "suspended"].map((s) => (
+                <label key={s} className="flex items-center gap-2 text-sm font-semibold">
+                  <input
+                    type="radio"
+                    name="account_status"
+                    value={s}
+                    checked={values.account_status === s}
+                    onChange={() => set("account_status")(s)}
+                  />
+                  {s === "active" ? "Active" : "Suspended"}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Account Notes</label>
+            <textarea
+              rows={3}
+              className={field}
+              value={values.admin_notes}
+              onChange={(e) => set("admin_notes")(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="mt-5 flex gap-3">
+          <button
+            type="submit"
+            disabled={save.isPending}
+            className="rounded-xl bg-sky px-5 py-2.5 text-sm font-bold text-sky-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {save.isPending ? "Saving…" : "Save Changes"}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl bg-secondary px-5 py-2.5 text-sm font-bold transition-colors hover:bg-accent"
+          >
+            Close
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function AdminUsers() {
   const { data: users = [], isPending } = useAdminUsers();
-  const { data: methods = [] } = useAdminPayoutMethods();
-  const { data: withdrawals = [] } = useAdminWithdrawals();
   const [query, setQuery] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return users;
     return users.filter(
-      (u) =>
-        u.full_name.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        u.country.toLowerCase().includes(q),
+      (u) => u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
     );
   }, [users, query]);
+
+  const editing = (users as UserRow[]).find((u) => u.id === editingId) ?? null;
 
   return (
     <AdminShell title="User Management">
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search by name, email or country"
+        placeholder="Search by name or email"
         className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring/40"
       />
 
       {isPending ? (
         <p className="py-10 text-center text-sm text-muted-foreground">Loading accounts…</p>
       ) : filtered.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">No accounts match that search.</p>
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          No accounts match that search.
+        </p>
       ) : (
-        <ul className="mt-5 space-y-3">
-          {filtered.map((u) => {
-            const open = openId === u.id;
-            const userMethods = methods.filter((m) => m.user_id === u.id) as PayoutMethodRow[];
-            const userWithdrawals = withdrawals.filter((w) => w.user_id === u.id);
-            return (
-              <li key={u.id} className="rounded-2xl border border-border bg-card p-4 shadow-card">
-                <button
-                  type="button"
-                  onClick={() => setOpenId(open ? null : u.id)}
-                  className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-left"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold">{u.full_name || "Unnamed account"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{u.email}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-sm font-bold">{formatUsd(Number(u.balance ?? 0))}</span>
-                    <span className="text-[11px] font-bold uppercase text-muted-foreground">
-                      {u.roles.length ? u.roles.join(", ") : "user"}
-                    </span>
-                  </div>
-                </button>
-
-                {open && (
-                  <div className="mt-4 grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
-                    <div>
-                      <p className="text-xs font-bold uppercase text-muted-foreground">Details</p>
-                      <dl className="mt-2 space-y-1 text-sm">
-                        <div className="flex justify-between gap-3">
-                          <dt className="text-muted-foreground">Country</dt>
-                          <dd className="font-semibold">{u.country}</dd>
-                        </div>
-                        <div className="flex justify-between gap-3">
-                          <dt className="text-muted-foreground">Referrer</dt>
-                          <dd className="font-semibold">{u.referrer || "—"}</dd>
-                        </div>
-                        <div className="flex justify-between gap-3">
-                          <dt className="text-muted-foreground">Joined</dt>
-                          <dd className="font-semibold">
-                            {new Date(u.created_at).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "2-digit",
-                              year: "numeric",
-                            })}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between gap-3">
-                          <dt className="text-muted-foreground">Requests</dt>
-                          <dd className="font-semibold">{userWithdrawals.length}</dd>
-                        </div>
-                      </dl>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold uppercase text-muted-foreground">
-                        Payout methods
-                      </p>
-                      {userMethods.length === 0 ? (
-                        <p className="mt-2 text-sm text-muted-foreground">None saved.</p>
-                      ) : (
-                        <ul className="mt-2 space-y-2 text-sm">
-                          {userMethods.map((m) => (
-                            <li key={m.id} className="rounded-xl bg-secondary px-3 py-2">
-                              <p className="font-semibold">{methodTitle(m)}</p>
-                              <p className="text-xs text-muted-foreground">{summarizeMethod(m)}</p>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </li>
-            );
-          })}
+        <ul className="mt-5 divide-y divide-border rounded-2xl border border-border bg-card">
+          {(filtered as UserRow[]).map((u) => (
+            <li
+              key={u.id}
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold">{u.full_name || "Unnamed account"}</p>
+                <p className="truncate text-xs text-muted-foreground">{u.email}</p>
+                <p className="mt-1 text-xs font-semibold text-muted-foreground">
+                  {formatUsd(Number(u.balance ?? 0))}
+                  {u.account_status === "suspended" ? " · Suspended" : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingId(u.id)}
+                className="shrink-0 rounded-lg bg-sky px-4 py-2 text-sm font-bold text-sky-foreground transition-opacity hover:opacity-90"
+              >
+                View
+              </button>
+            </li>
+          ))}
         </ul>
       )}
+
+      {editing && <EditUserCard user={editing} onClose={() => setEditingId(null)} />}
     </AdminShell>
   );
 }
