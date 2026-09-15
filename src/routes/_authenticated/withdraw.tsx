@@ -230,35 +230,40 @@ function Withdraw() {
   if (done) {
     return (
       <AppShell title="Withdrawal">
-        <div className="max-w-lg">
+              <div className="mx-auto max-w-xl p-4 sm:p-6">
+        <div className="flex flex-col items-center text-center">
           <div className="grid h-14 w-14 place-items-center rounded-full bg-sky text-sky-foreground">
             <Check className="h-8 w-8" />
           </div>
-                    <h2 className="mt-4 text-2xl font-extrabold">Withdrawal Placed Successfully</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Your withdrawal of {formatUsd(done.amount)} has been placed successfully.
-          </p>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">
-            Check your email for confirmation.
-          </p>
-
+          <h2 className="mt-4 text-2xl font-extrabold">Withdrawal Placed Successfully</h2>
+          <div className="mt-6 space-y-4 rounded-xl border border-border p-4 text-sm w-full max-w-md text-left">
+            <p className="text-center font-semibold">
+              Your withdrawal of {formatUsd(done.amount)} has been placed successfully.
+            </p>
+            <p className="text-center text-xs text-muted-foreground">
+              Check your email for confirmation.
+            </p>
+            <dl className="space-y-2">
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Request ID</dt>
+                <dd className="font-mono text-xs font-bold">{done.id}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Status</dt>
                 <dd className="font-bold capitalize">{done.status}</dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Method</dt>
+                <dt className="text-muted-foreground">Destination</dt>
                 <dd className="font-semibold">{done.summary}</dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Recorded</dt>
-                <dd className="font-semibold">
+                <dt className="text-muted-foreground">Submitted</dt>
+                <dd className="text-xs text-muted-foreground">
                   {new Date(done.createdAt).toLocaleString("en-US", {
                     month: "short",
-                    day: "2-digit",
+                    day: "numeric",
                     year: "numeric",
-                    hour: "2-digit",
+                    hour: "numeric",
                     minute: "2-digit",
                   })}
                 </dd>
@@ -269,11 +274,15 @@ function Withdraw() {
             type="button"
             onClick={() => {
               setDone(null);
-              setReview(false);
               setAmount("");
             }}
-            className="mt-4 w-full rounded-xl bg-sky px-6 py-3 font-bold text-sky-foreground transition-opacity hover:opacity-90"
+            className="mt-6 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90"
           >
+            Done
+          </button>
+        </div>
+      </div>
+
             OK
           </button>
         </div>
