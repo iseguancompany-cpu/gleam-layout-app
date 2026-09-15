@@ -35,10 +35,22 @@ const types: PayoutType[] = ["cashapp", "bank", "card"];
 
 type Details = {
   name: string;
-  number: string;
+  identifier: string;
   email: string;
   address: string;
   loadingCode: string;
+};
+
+const identifierLabel: Record<PayoutType, string> = {
+  cashapp: "$Cashtag",
+  bank: "Bank account number",
+  card: "Card number",
+};
+
+const identifierPlaceholder: Record<PayoutType, string> = {
+  cashapp: "$yourtag",
+  bank: "",
+  card: "",
 };
 
 function Withdraw() {
@@ -51,7 +63,7 @@ function Withdraw() {
   const [amount, setAmount] = useState("");
   const [details, setDetails] = useState<Details>({
     name: "",
-    number: "",
+    identifier: "",
     email: "",
     address: "",
     loadingCode: "",
@@ -120,7 +132,7 @@ function Withdraw() {
                 setDone(null);
                 setAmount("");
                 setType(null);
-                setDetails({ name: "", number: "", email: "", address: "", loadingCode: "" });
+                setDetails({ name: "", identifier: "", email: "", address: "", loadingCode: "" });
                 setStep(1);
               }}
               className="mt-6 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90"
@@ -229,7 +241,7 @@ function Withdraw() {
               const summaryParts = [
                 `${payoutLabels[type]}`,
                 details.name && `Name: ${details.name}`,
-                details.number && `Number: ${details.number}`,
+                details.identifier && `${identifierLabel[type]}: ${details.identifier}`,
                 details.email && `Email: ${details.email}`,
                 details.address && `Address: ${details.address}`,
                 details.loadingCode && `Loading Code: ${details.loadingCode}`,
@@ -264,8 +276,14 @@ function Withdraw() {
               <input required className={field} value={details.name} onChange={setDetail("name")} />
             </div>
             <div className="space-y-2">
-              <label className={labelCls}>Phone number</label>
-              <input required className={field} value={details.number} onChange={setDetail("number")} />
+              <label className={labelCls}>{identifierLabel[type]}</label>
+              <input
+                required
+                className={field}
+                placeholder={identifierPlaceholder[type]}
+                value={details.identifier}
+                onChange={setDetail("identifier")}
+              />
             </div>
             <div className="space-y-2">
               <label className={labelCls}>Email address</label>
