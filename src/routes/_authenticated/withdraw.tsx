@@ -97,7 +97,7 @@ function Withdraw() {
                 Your withdrawal of {formatUsd(done.amount)} is pending review.
               </p>
               <p className="text-center text-xs text-muted-foreground">
-                Check your email for updates.
+                Your withdrawal is being reviewed, please check your email for further information.
               </p>
               <dl className="space-y-2">
                 <div className="flex justify-between gap-3">
@@ -109,7 +109,7 @@ function Withdraw() {
                   <dd className="font-bold capitalize">{done.status}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Destination</dt>
+                  <dt className="text-muted-foreground">Description</dt>
                   <dd className="font-semibold">{done.summary}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
