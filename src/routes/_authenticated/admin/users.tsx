@@ -1,4 +1,3 @@
-```tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -52,7 +51,7 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
     admin_notes: user.admin_notes ?? "",
   });
 
-useEffect(() => {
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -60,11 +59,13 @@ useEffect(() => {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
+  const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
 
-return (
-    
-       e.stopPropagation()}
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <form
+        className="w-full max-w-md rounded-2xl bg-card p-5 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => {
           e.preventDefault();
           save.mutate(
@@ -80,116 +81,115 @@ return (
           );
         }}
       >
-        
-          Edit User Details
-          
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Edit User Details</h2>
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             ✕
-          
-        
+          </button>
+        </div>
 
-    <div className="mt-4 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-      <div className="space-y-1">
-        <label className={labelCls}>Name</label>
-        <input
-          className={field}
-          value={values.full_name}
-          onChange={(e) => set("full_name")(e.target.value)}
-        />
-      </div>
-      <div className="space-y-1">
-        <label className={labelCls}>Phone</label>
-        <input
-          className={field}
-          value={values.phone}
-          onChange={(e) => set("phone")(e.target.value)}
-        />
-      </div>
-      <div className="space-y-1">
-        <label className={labelCls}>Email</label>
-        <input
-          type="email"
-          className={field}
-          value={values.email}
-          onChange={(e) => set("email")(e.target.value)}
-        />
-      </div>
-      <div className="space-y-1">
-        <label className={labelCls}>User ID</label>
-        <input readOnly className={`${field} text-muted-foreground`} value={user.id} />
-      </div>
-      <div className="space-y-1">
-        <label className={labelCls}>ID Verification Status</label>
-        <select
-          className={field}
-          value={values.id_verification_status}
-          onChange={(e) => set("id_verification_status")(e.target.value)}
-        >
-          {verificationOptions.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt.charAt(0).toUpperCase() + opt.slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="space-y-1">
-        <label className={labelCls}>Payment Address</label>
-        <input
-          className={field}
-          placeholder="e.g. $cashtag or wallet"
-          value={values.payment_address}
-          onChange={(e) => set("payment_address")(e.target.value)}
-        />
-      </div>
-      <div className="space-y-1">
-        <label className={labelCls}>Account Status</label>
-        <select
-          className={field}
-          value={values.account_status}
-          onChange={(e) => set("account_status")(e.target.value)}
-        >
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-        </select>
-      </div>
-      <div className="space-y-1">
-        <label className={labelCls}>Admin Notes</label>
-        <textarea
-          className={`${field} min-h-[70px] resize-none`}
-          placeholder="Internal notes about this user"
-          value={values.admin_notes}
-          onChange={(e) => set("admin_notes")(e.target.value)}
-        />
-      </div>
+        <div className="mt-4 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="space-y-1">
+            <label className={labelCls}>Name</label>
+            <input
+              className={field}
+              value={values.full_name}
+              onChange={(e) => set("full_name")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Phone</label>
+            <input
+              className={field}
+              value={values.phone}
+              onChange={(e) => set("phone")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Email</label>
+            <input
+              type="email"
+              className={field}
+              value={values.email}
+              onChange={(e) => set("email")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>User ID</label>
+            <input readOnly className={`${field} text-muted-foreground`} value={user.id} />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>ID Verification Status</label>
+            <select
+              className={field}
+              value={values.id_verification_status}
+              onChange={(e) => set("id_verification_status")(e.target.value)}
+            >
+              {verificationOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Payment Address</label>
+            <input
+              className={field}
+              placeholder="e.g. $cashtag or wallet"
+              value={values.payment_address}
+              onChange={(e) => set("payment_address")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Account Status</label>
+            <select
+              className={field}
+              value={values.account_status}
+              onChange={(e) => set("account_status")(e.target.value)}
+            >
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Admin Notes</label>
+            <textarea
+              className={`${field} min-h-[70px] resize-none`}
+              placeholder="Internal notes about this user"
+              value={values.admin_notes}
+              onChange={(e) => set("admin_notes")(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="mt-5 flex justify-end gap-2 border-t border-border pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary"
+          >
+            Close
+          </button>
+          <button
+            type="submit"
+            disabled={save.isPending}
+            className="rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          >
+            {save.isPending ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      </form>
     </div>
-
-    <div className="mt-5 flex justify-end gap-2 border-t border-border pt-4">
-      <button
-        type="button"
-        onClick={onClose}
-        className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary"
-      >
-        Close
-      </button>
-      <button
-        type="submit"
-        disabled={save.isPending}
-        className="rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 disabled:opacity-50"
-      >
-        {save.isPending ? "Saving..." : "Save Changes"}
-      </button>
-    </div>
-  </form>
-</div>
-
-);
+  );
 }
 
 function AdminUsers() {
   const { data: users = [], isLoading, error } = useAdminUsers();
   const [search, setSearch] = useState("");
-  const [activeUser, setActiveUser] = useState(null);
+  const [activeUser, setActiveUser] = useState<UserRow | null>(null);
 
-const filtered = useMemo(() => {
+  const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return users as unknown as UserRow[];
     return (users as unknown as UserRow[]).filter((u) =>
@@ -198,105 +198,123 @@ const filtered = useMemo(() => {
       (u.phone ?? "").toLowerCase().includes(q)
     );
   }, [users, search]);
-          <div className="space-y-3 md:hidden">
-          {filtered.map((u) => (
-            <div key={u.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
-              <div className="font-bold text-foreground">
-                {u.full_name || "Unnamed user"}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">Email: </span>
-                {u.email || "—"}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">Phone: </span>
-                {u.phone || "—"}
-              </div>
-              <div className="pt-2 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveUser(u)}
-                  className="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700"
-                >
-                  View User
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toast.info("User deletion is protected.")}
-                  className="flex-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
-                >
-                  Delete User
-                </button>
-              </div>
-            </div>
-          ))}
-          {filtered.length === 0 && (
-            <div className="py-6 text-center text-sm text-muted-foreground">No users found.</div>
-          )}
-        </div>
 
-        {/* Wide / Horizontal View: Table matching your screenshot */}
-        <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-muted/40 text-xs font-bold uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">NAME</th>
-                <th className="px-4 py-3">EMAIL</th>
-                <th className="px-4 py-3">PHONE</th>
-                <th className="px-4 py-3 text-right">MORE</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
+  return (
+    <AdminShell>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">User Management</h1>
+
+        <input
+          className={field}
+          placeholder="Search by name or email"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        {isLoading ? (
+          <div className="py-6 text-center text-sm text-muted-foreground">Loading users...</div>
+        ) : error ? (
+          <div className="py-6 text-center text-sm text-destructive">Could not load users.</div>
+        ) : (
+          <>
+            {/* Narrow / Mobile View: Cards */}
+            <div className="space-y-3 md:hidden">
               {filtered.map((u) => (
-                <tr key={u.id} className="hover:bg-muted/20">
-                  <td className="whitespace-nowrap px-4 py-3 font-medium">
+                <div key={u.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
+                  <div className="font-bold text-foreground">
                     {u.full_name || "Unnamed user"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">Email: </span>
                     {u.email || "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">Phone: </span>
                     {u.phone || "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setActiveUser(u)}
-                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700"
-                      >
-                        View User
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toast.info("User deletion is protected.")}
-                        className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
-                      >
-                        Delete User
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                  </div>
+                  <div className="pt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveUser(u)}
+                      className="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700"
+                    >
+                      View User
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toast.info("User deletion is protected.")}
+                      className="flex-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                    >
+                      Delete User
+                    </button>
+                  </div>
+                </div>
               ))}
-                            {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
-                    No users found.
-                  </td>
-                </tr>
+              {filtered.length === 0 && (
+                <div className="py-6 text-center text-sm text-muted-foreground">No users found.</div>
               )}
-            </tbody>
-          </table>
-        </div>
-      </>
-    )}
+            </div>
 
-    {activeUser && (
-      <EditUserCard user={activeUser} onClose={() => setActiveUser(null)} />
-    )}
-  </div>
-</AdminShell>
+            {/* Wide / Horizontal View: Table matching your screenshot */}
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b-2 border-foreground/80 text-xs font-black uppercase tracking-wide text-foreground">
+                  <tr>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Phone</th>
+                    <th className="px-4 py-3 text-right">More</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filtered.map((u) => (
+                    <tr key={u.id} className="hover:bg-muted/20">
+                      <td className="whitespace-nowrap px-4 py-3 font-medium">
+                        {u.full_name || "Unnamed user"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground underline">
+                        {u.email || "—"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                        {u.phone || "—"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveUser(u)}
+                            className="rounded-full bg-blue-900 px-4 py-2 text-xs font-bold text-white hover:bg-blue-800"
+                          >
+                            View User
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toast.info("User deletion is protected.")}
+                            className="rounded-full bg-red-700 px-4 py-2 text-xs font-bold text-white hover:bg-red-800"
+                          >
+                            Delete User
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
+                        No users found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
 
-);
+        {activeUser && (
+          <EditUserCard user={activeUser} onClose={() => setActiveUser(null)} />
+        )}
+      </div>
+    </AdminShell>
+  );
 }
-```
