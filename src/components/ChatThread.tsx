@@ -72,8 +72,7 @@ export function ChatThread({
                       mine ? "text-right" : "text-left"
                     }`}
                   >
-                    {m.sender_role === "admin" ? "Support" : "You"
-                      .replace("You", mine ? "You" : "Account holder")}
+                    {mine ? "You" : m.sender_role === "admin" ? "Support" : "Account holder"}
                     {" · "}
                     {formatChatTime(m.created_at)}
                   </p>
