@@ -32,7 +32,7 @@ export const Route = createFileRoute("/_authenticated/customer-care")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: CustomerCare;
+  component: CustomerCare,
 });
 
 function CustomerCare() {

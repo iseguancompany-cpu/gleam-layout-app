@@ -9,6 +9,7 @@ const tabs = [
   { title: "Users", to: "/admin/users" },
   { title: "Approvals", to: "/admin/approvals" },
   { title: "Cash Loading", to: "/admin/cash" },
+  { title: "Customer Care", to: "/admin/support" },
 ] as const;
 
 export function AdminShell({ title, children }: { title: string; children: ReactNode }) {
