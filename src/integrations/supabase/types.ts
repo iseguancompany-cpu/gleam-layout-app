@@ -175,6 +175,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
+          admin_notes: string
           avatar_url: string | null
           balance: number
           country: string
@@ -182,10 +184,15 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          id_verification_status: string
+          payment_address: string
+          phone: string
           referrer: string
           updated_at: string
         }
         Insert: {
+          account_status?: string
+          admin_notes?: string
           avatar_url?: string | null
           balance?: number
           country?: string
@@ -193,10 +200,15 @@ export type Database = {
           email?: string
           full_name?: string
           id: string
+          id_verification_status?: string
+          payment_address?: string
+          phone?: string
           referrer?: string
           updated_at?: string
         }
         Update: {
+          account_status?: string
+          admin_notes?: string
           avatar_url?: string | null
           balance?: number
           country?: string
@@ -204,6 +216,9 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          id_verification_status?: string
+          payment_address?: string
+          phone?: string
           referrer?: string
           updated_at?: string
         }

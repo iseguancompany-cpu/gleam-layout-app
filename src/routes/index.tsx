@@ -28,7 +28,7 @@ function Landing() {
     <div className="min-h-screen">
       <header className="bg-topbar text-topbar-foreground">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4">
-          <span className="truncate text-sm font-bold sm:text-base">Cash Loading Portal</span>
+          <span className="truncate text-sm font-bold sm:text-base">Cash Loading</span>
           <Link
             to={user ? "/dashboard" : "/auth"}
             className="shrink-0 rounded-lg bg-card px-4 py-2 text-sm font-bold text-card-foreground"

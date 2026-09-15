@@ -203,6 +203,31 @@ export function useAdminUsers() {
   });
 }
 
+export type AdminUserEdit = {
+  full_name: string;
+  phone: string;
+  email: string;
+  id_verification_status: string;
+  payment_address: string;
+  account_status: string;
+  admin_notes: string;
+};
+
+/** Admin edits the editable account details of a user profile. */
+export function useAdminUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, values }: { id: string; values: AdminUserEdit }) => {
+      const { error } = await supabase.from("profiles").update(values).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
 export function useAdminWithdrawals() {
   return useQuery({
     queryKey: ["admin-withdrawals"],
