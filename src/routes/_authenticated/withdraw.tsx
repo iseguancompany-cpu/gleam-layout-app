@@ -234,20 +234,14 @@ function Withdraw() {
           <div className="grid h-14 w-14 place-items-center rounded-full bg-sky text-sky-foreground">
             <Check className="h-8 w-8" />
           </div>
-          <h2 className="mt-4 text-2xl font-extrabold">Withdrawal Placed Successfully</h2>
-          <div className="mt-6 space-y-4 rounded-xl border border-border p-4 text-sm">
-            <p className="text-center font-semibold">
-              Your withdrawal of {formatUsd(done.amount)} has been placed successfully.
-            </p>
-            <p className="mt-1 text-sm font-medium text-muted-foreground">
-  Your withdrawal of  {formatUsd(done.amount)} has been placed successfully.
-  Your withdrawal of  {formatUsd(done.amount)} is pending
-</p>
+                    <h2 className="mt-4 text-2xl font-extrabold">Withdrawal Placed Successfully</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your withdrawal of {formatUsd(done.amount)} has been placed successfully.
+          </p>
+          <p className="mt-1 text-sm font-medium text-muted-foreground">
+            Check your email for confirmation.
+          </p>
 
-            <dl className="space-y-2">
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Request ID</dt>
-                <dd className="font-mono text-xs font-bold">{done.id}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Status</dt>
