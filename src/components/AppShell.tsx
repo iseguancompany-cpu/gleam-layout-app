@@ -27,7 +27,6 @@ const navItems = [
   { title: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { title: "Profile", to: "/profile", icon: User },
   { title: "Withdraw", to: "/withdraw", icon: ArrowDownToLine },
-  { title: "Customer Care", to: "/customer-care", icon: MessageCircle },
   { title: "Support and Privacy", to: "/support", icon: Info },
   { title: "Payment Address", to: "/payment-address", icon: QrCode },
   { title: "Recent Payouts", to: "/payouts", icon: Receipt },
@@ -176,6 +175,14 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
           </div>
         </main>
       </div>
+
+      <Link
+        to="/customer-care"
+        aria-label="Contact support"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition-transform hover:scale-105 hover:bg-green-700"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </Link>
     </div>
   );
 }
