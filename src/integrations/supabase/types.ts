@@ -224,6 +224,71 @@ export type Database = {
         }
         Relationships: []
       }
+      support_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          status: Database["public"]["Enums"]["support_status"]
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: Database["public"]["Enums"]["support_status"]
+          subject?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: Database["public"]["Enums"]["support_status"]
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+          sender_role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          sender_role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          sender_role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -337,6 +402,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       payout_type: "cashapp" | "bank" | "card"
+      support_status: "open" | "resolved"
       withdrawal_status: "pending" | "approved" | "rejected" | "completed"
     }
     CompositeTypes: {
@@ -467,6 +533,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       payout_type: ["cashapp", "bank", "card"],
+      support_status: ["open", "resolved"],
       withdrawal_status: ["pending", "approved", "rejected", "completed"],
     },
   },

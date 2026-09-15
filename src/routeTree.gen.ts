@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCardRouteImport } from './routes/_authenticated/card'
 import { Route as AuthenticatedConnectBalanceRouteImport } from './routes/_authenticated/connect-balance'
+import { Route as AuthenticatedCustomerCareRouteImport } from './routes/_authenticated/customer-care'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedPaymentAddressRouteImport } from './routes/_authenticated/payment-address'
 import { Route as AuthenticatedPayoutsRouteImport } from './routes/_authenticated/payouts'
@@ -25,6 +26,7 @@ import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminApprovalsRouteImport } from './routes/_authenticated/admin/approvals'
 import { Route as AuthenticatedAdminCashRouteImport } from './routes/_authenticated/admin/cash'
+import { Route as AuthenticatedAdminSupportRouteImport } from './routes/_authenticated/admin/support'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 
 const IndexRoute = IndexRouteImport.update({
@@ -55,6 +57,12 @@ const AuthenticatedConnectBalanceRoute =
   AuthenticatedConnectBalanceRouteImport.update({
     id: '/connect-balance',
     path: '/connect-balance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCustomerCareRoute =
+  AuthenticatedCustomerCareRouteImport.update({
+    id: '/customer-care',
+    path: '/customer-care',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -110,6 +118,12 @@ const AuthenticatedAdminCashRoute = AuthenticatedAdminCashRouteImport.update({
   path: '/admin/cash',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminSupportRoute =
+  AuthenticatedAdminSupportRouteImport.update({
+    id: '/admin/support',
+    path: '/admin/support',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -122,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/card': typeof AuthenticatedCardRoute
   '/connect-balance': typeof AuthenticatedConnectBalanceRoute
+  '/customer-care': typeof AuthenticatedCustomerCareRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/payment-address': typeof AuthenticatedPaymentAddressRoute
   '/payouts': typeof AuthenticatedPayoutsRoute
@@ -131,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/admin/approvals': typeof AuthenticatedAdminApprovalsRoute
   '/admin/cash': typeof AuthenticatedAdminCashRoute
+  '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -140,6 +156,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/card': typeof AuthenticatedCardRoute
   '/connect-balance': typeof AuthenticatedConnectBalanceRoute
+  '/customer-care': typeof AuthenticatedCustomerCareRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/payment-address': typeof AuthenticatedPaymentAddressRoute
   '/payouts': typeof AuthenticatedPayoutsRoute
@@ -149,6 +166,7 @@ export interface FileRoutesByTo {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/admin/approvals': typeof AuthenticatedAdminApprovalsRoute
   '/admin/cash': typeof AuthenticatedAdminCashRoute
+  '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
@@ -160,6 +178,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/card': typeof AuthenticatedCardRoute
   '/_authenticated/connect-balance': typeof AuthenticatedConnectBalanceRoute
+  '/_authenticated/customer-care': typeof AuthenticatedCustomerCareRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/payment-address': typeof AuthenticatedPaymentAddressRoute
   '/_authenticated/payouts': typeof AuthenticatedPayoutsRoute
@@ -169,6 +188,7 @@ export interface FileRoutesById {
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
   '/_authenticated/admin/approvals': typeof AuthenticatedAdminApprovalsRoute
   '/_authenticated/admin/cash': typeof AuthenticatedAdminCashRoute
+  '/_authenticated/admin/support': typeof AuthenticatedAdminSupportRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -180,6 +200,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/card'
     | '/connect-balance'
+    | '/customer-care'
     | '/dashboard'
     | '/payment-address'
     | '/payouts'
@@ -189,6 +210,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/admin/approvals'
     | '/admin/cash'
+    | '/admin/support'
     | '/admin/users'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -198,6 +220,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/card'
     | '/connect-balance'
+    | '/customer-care'
     | '/dashboard'
     | '/payment-address'
     | '/payouts'
@@ -207,6 +230,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/admin/approvals'
     | '/admin/cash'
+    | '/admin/support'
     | '/admin/users'
     | '/admin'
   id:
@@ -217,6 +241,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/card'
     | '/_authenticated/connect-balance'
+    | '/_authenticated/customer-care'
     | '/_authenticated/dashboard'
     | '/_authenticated/payment-address'
     | '/_authenticated/payouts'
@@ -226,6 +251,7 @@ export interface FileRouteTypes {
     | '/_authenticated/withdraw'
     | '/_authenticated/admin/approvals'
     | '/_authenticated/admin/cash'
+    | '/_authenticated/admin/support'
     | '/_authenticated/admin/users'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
@@ -279,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/connect-balance'
       fullPath: '/connect-balance'
       preLoaderRoute: typeof AuthenticatedConnectBalanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/customer-care': {
+      id: '/_authenticated/customer-care'
+      path: '/customer-care'
+      fullPath: '/customer-care'
+      preLoaderRoute: typeof AuthenticatedCustomerCareRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -351,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCashRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/support': {
+      id: '/_authenticated/admin/support'
+      path: '/admin/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AuthenticatedAdminSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/admin/users'
@@ -364,6 +404,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCardRoute: typeof AuthenticatedCardRoute
   AuthenticatedConnectBalanceRoute: typeof AuthenticatedConnectBalanceRoute
+  AuthenticatedCustomerCareRoute: typeof AuthenticatedCustomerCareRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedPaymentAddressRoute: typeof AuthenticatedPaymentAddressRoute
   AuthenticatedPayoutsRoute: typeof AuthenticatedPayoutsRoute
@@ -373,6 +414,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWithdrawRoute: typeof AuthenticatedWithdrawRoute
   AuthenticatedAdminApprovalsRoute: typeof AuthenticatedAdminApprovalsRoute
   AuthenticatedAdminCashRoute: typeof AuthenticatedAdminCashRoute
+  AuthenticatedAdminSupportRoute: typeof AuthenticatedAdminSupportRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -380,6 +422,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCardRoute: AuthenticatedCardRoute,
   AuthenticatedConnectBalanceRoute: AuthenticatedConnectBalanceRoute,
+  AuthenticatedCustomerCareRoute: AuthenticatedCustomerCareRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedPaymentAddressRoute: AuthenticatedPaymentAddressRoute,
   AuthenticatedPayoutsRoute: AuthenticatedPayoutsRoute,
@@ -389,6 +432,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWithdrawRoute: AuthenticatedWithdrawRoute,
   AuthenticatedAdminApprovalsRoute: AuthenticatedAdminApprovalsRoute,
   AuthenticatedAdminCashRoute: AuthenticatedAdminCashRoute,
+  AuthenticatedAdminSupportRoute: AuthenticatedAdminSupportRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
