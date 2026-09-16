@@ -84,6 +84,16 @@ function WithdrawalDetailsModal({
             </span>
           </div>
 
+          {/* Payment method + cashtag/handle, shown alongside the existing
+              details without adding a new column anywhere in the table. */}
+          <div className="flex justify-between gap-2">
+            <span className="font-semibold text-muted-foreground">Payment Method</span>
+            <span className="text-right text-foreground">
+              {payoutLabels[withdrawal.method_type] ?? withdrawal.method_type}
+              {withdrawal.method_summary ? ` · ${withdrawal.method_summary}` : ""}
+            </span>
+          </div>
+
           <div className="flex justify-between gap-2">
             <span className="font-semibold text-muted-foreground">Status</span>
             <span className="font-bold capitalize text-foreground">{withdrawal.status}</span>
@@ -112,8 +122,7 @@ function WithdrawalDetailsModal({
                 {withdrawal.admin_note}
               </p>
             </div>
-
-)}
+          )}
         </div>
 
         {/* Action Button */}
@@ -128,8 +137,6 @@ function WithdrawalDetailsModal({
     </div>
   );
 }
-
-
 
 function Transactions() {
   const { data: profile } = useProfile();
@@ -157,7 +164,7 @@ function Transactions() {
                 <th className="py-3 pr-3 font-bold">Name</th>
                 <th className="py-3 pr-3 font-bold">Type</th>
                 <th className="py-3 pr-3 font-bold">Amount</th>
-                <th className="py-3 font-bold">More</th>
+                <th className="py-3 font-bold">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -172,9 +179,10 @@ function Transactions() {
                     <button
                       type="button"
                       onClick={() => setSelected(w)}
-                      className="rounded-full bg-navy px-4 py-2 text-xs font-bold text-navy-foreground transition-opacity hover:opacity-80"
+                      className="inline-flex"
+                      aria-label={`View details for ${w.status} withdrawal`}
                     >
-                      View More
+                      <StatusBadge status={w.status} />
                     </button>
                   </td>
                 </tr>
@@ -200,9 +208,10 @@ function Transactions() {
               <button
                 type="button"
                 onClick={() => setSelected(w)}
-                className="shrink-0 rounded-full bg-navy px-4 py-2 text-xs font-bold text-navy-foreground transition-opacity hover:opacity-80"
+                className="shrink-0 inline-flex"
+                aria-label={`View details for ${w.status} withdrawal`}
               >
-                View More
+                <StatusBadge status={w.status} />
               </button>
             </div>
           ))}
