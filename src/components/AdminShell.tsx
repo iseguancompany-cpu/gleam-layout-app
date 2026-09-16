@@ -47,7 +47,6 @@ export function AdminShell({ title, children }: { title: string; children: React
             <Link
               key={item.to}
               to={item.to}
-              onClick={() => setMobileMenuOpen(false)}
               className={`block w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
                 active
                   ? "bg-emerald-100 text-emerald-900 font-bold"
