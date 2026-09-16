@@ -96,7 +96,9 @@ function TransactionDetails({
             <span className="text-base font-extrabold">{formatUsd(Number(withdrawal.amount))}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-muted-foreground">Date</span>
+            <span className="text-xs font-bold uppercase
+
+text-muted-foreground">Date</span>
             <span className="text-sm">
               {new Date(withdrawal.created_at).toLocaleString("en-US", {
                 month: "short",
@@ -119,20 +121,20 @@ function TransactionDetails({
           )}
         </div>
 
-                {withdrawal.status === "pending" && (
+        {withdrawal.status === "pending" && (
           <div className="mt-4 space-y-3 border-t border-border pt-4">
             <div className="flex gap-2">
               <input
                 value={note}
                 onChange={(e) => onNoteChange(e.target.value)}
                 placeholder="Type note for user..."
-                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary"
               />
               <button
                 type="button"
                 disabled={isPending || !note.trim()}
                 onClick={() => onAct("pending")}
-                className="rounded-xl bg-navy px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 Send Note
               </button>
@@ -158,17 +160,15 @@ function TransactionDetails({
           </div>
         )}
 
-
-
         {withdrawal.status === "approved" && (
           <div className="mt-4 border-t border-border pt-4">
             <button
               type="button"
               disabled={isPending}
               onClick={() => onAct("completed")}
-              className="rounded-xl bg-navy px-4 py-2.5 text-sm font-bold text-navy-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              Mark as paid out
+              Mark Completed
             </button>
           </div>
         )}
@@ -178,107 +178,15 @@ function TransactionDetails({
 }
 
 function AdminApprovals() {
-  const { data: withdrawals = [], isPending } = useAdminWithdrawals();
+  const { data: withdrawals = [], isLoading } = useAdminWithdrawals();
   const { data: users = [] } = useAdminUsers();
   const update = useUpdateWithdrawalStatus();
+
   const [filter, setFilter] = useState<WithdrawalStatus | "all">("pending");
-  const [notes, setNotes] = useState<Record<string, string>>({});
   const [activeWithdrawal, setActiveWithdrawal] = useState<Withdrawal | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
-  const rows = filter === "all" ? withdrawals : withdrawals.filter((w) => w.status === filter);
+  const nameFor = (userId: string) => {
+    const user = users.find((u) => u.i
 
-  const nameFor = (id: string) => {
-    const u = users.find((x) => x.id === id);
-    return u?.full_name?.trim() || u?.email || "Unknown user";
-  };
 
-  const act = (id: string, status: WithdrawalStatus) => {
-    update.mutate(
-      { id, status, note: notes[id] ?? "" },
-      {
-        onSuccess: () => {
-          toast.success(`Request marked ${status}`);
-          setActiveWithdrawal(null);
-        },
-        onError: (err) =>
-          toast.error(err instanceof Error ? err.message : "Could not update the request"),
-      },
-    );
-  };
-
-  return (
-    <AdminShell title="Transaction Approvals">
-      <div className="flex flex-wrap gap-2">
-        {filters.map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setFilter(f)}
-            className={`rounded-full px-4 py-2 text-xs font-bold uppercase transition-colors ${
-              filter === f ? "bg-navy text-navy-foreground" : "bg-secondary hover:bg-accent"
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      {isPending ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">Loading requests…</p>
-      ) : rows.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">
-          Nothing here right now.
-        </p>
-      ) : (
-        <div className="mt-5 overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b-2 border-foreground/80 text-xs font-black uppercase tracking-wide text-foreground">
-              <tr>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3 text-right">More</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {rows.map((w) => (
-                <tr key={w.id} className="hover:bg-muted/20">
-                  <td className="whitespace-nowrap px-4 py-3 font-medium">
-                    {nameFor(w.user_id)}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                    {payoutLabels[w.method_type]}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 font-semibold">
-                    {formatUsd(Number(w.amount))}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setActiveWithdrawal(w)}
-                      className="rounded-full bg-blue-900 px-4 py-2 text-xs font-bold text-white hover:bg-blue-800"
-                    >
-                      More
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeWithdrawal && (
-        <TransactionDetails
-          withdrawal={activeWithdrawal}
-          nameFor={nameFor}
-          note={notes[activeWithdrawal.id] ?? ""}
-          onNoteChange={(v) => setNotes((n) => ({ ...n, [activeWithdrawal.id]: v }))}
-          onClose={() => setActiveWithdrawal(null)}
-          onAct={(status) => act(activeWithdrawal.id, status)}
-          isPending={update.isPending}
-        />
-      )}
-    </AdminShell>
-  );
-}
