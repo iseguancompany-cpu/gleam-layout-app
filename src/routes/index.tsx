@@ -9,7 +9,7 @@ import {
   useAdminWithdrawals,
 } from "@/lib/api";
 
-export const Route = createFileRoute("/_authenticated/admin/")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Admin Overview — Cash Loading Portal" },

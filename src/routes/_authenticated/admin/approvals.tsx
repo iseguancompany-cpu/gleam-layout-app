@@ -85,7 +85,10 @@ function TransactionDetails({
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase text-muted-foreground">Type</span>
             <span className="text-sm">
-              {payoutLabels[withdrawal.method_type]} · {withdrawal.method_summary}
+              {payoutLabels[withdrawal.method_type as keyof typeof payoutLabels] ??
+                withdrawal.method_type}{" "}
+              ·{" "}
+              {withdrawal.method_summary}
             </span>
           </div>
           <div className="flex items-center justify-between">
