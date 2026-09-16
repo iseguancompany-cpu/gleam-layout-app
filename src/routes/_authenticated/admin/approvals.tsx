@@ -119,20 +119,30 @@ function TransactionDetails({
           )}
         </div>
 
-        {withdrawal.status === "pending" && (
+                {withdrawal.status === "pending" && (
           <div className="mt-4 space-y-3 border-t border-border pt-4">
-            <input
-              value={note}
-              onChange={(e) => onNoteChange(e.target.value)}
-              placeholder="Optional note for the account holder"
-              className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
-            />
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2">
+              <input
+                value={note}
+                onChange={(e) => onNoteChange(e.target.value)}
+                placeholder="Type note for user..."
+                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+              />
+              <button
+                type="button"
+                disabled={isPending || !note.trim()}
+                onClick={() => onAct("pending")}
+                className="rounded-xl bg-navy px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                Send Note
+              </button>
+            </div>
+            <div className="flex gap-2">
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => onAct("approved")}
-                className="rounded-xl bg-jade px-4 py-2.5 text-sm font-bold text-jade-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 Approve
               </button>
@@ -140,13 +150,15 @@ function TransactionDetails({
                 type="button"
                 disabled={isPending}
                 onClick={() => onAct("rejected")}
-                className="rounded-xl bg-destructive px-4 py-2.5 text-sm font-bold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-destructive px-4 py-2.5 text-sm font-bold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                Decline
+                Reject
               </button>
             </div>
           </div>
         )}
+
+
 
         {withdrawal.status === "approved" && (
           <div className="mt-4 border-t border-border pt-4">
