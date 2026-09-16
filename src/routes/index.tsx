@@ -1,73 +1,93 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { useAuthUser } from "@/lib/auth";
+import { AdminShell } from "@/components/AdminShell";
+import { StatusBadge } from "@/components/StatusBadge";
+import {
+  formatUsd,
+  useAdminActivity,
+  useAdminUsers,
+  useAdminWithdrawals,
+} from "@/lib/api";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
     meta: [
-      { title: "Cash Loading Portal — Balances and Payouts" },
+      { title: "Admin Overview — Cash Loading Portal" },
       {
         name: "description",
-        content:
-          "Track your balance, save your own payout details and request withdrawals with no fees or hidden charges.",
+        content: "Administrator overview of accounts, balances, pending approvals and recent activity.",
       },
-      { property: "og:title", content: "Cash Loading Portal — Balances and Payouts" },
+      { property: "og:title", content: "Admin Overview — Cash Loading Portal" },
       {
         property: "og:description",
-        content: "Track your balance, save payout details and request withdrawals — no fees.",
+        content: "Accounts, balances, pending approvals and recent activity at a glance.",
       },
     ],
   }),
-  component: Landing,
+  component: AdminOverview,
 });
 
-function Landing() {
-  const { data: user, isLoading } = useAuthUser();
+function AdminOverview() {
+  const { data: users = [] } = useAdminUsers();
+  const { data: withdrawals = [] } = useAdminWithdrawals();
+  const { data: activity = [] } = useAdminActivity();
+
+  const paidOut = withdrawals
+    .filter((w) => w.status === "approved" || w.status === "completed")
+    .reduce((sum, w) => sum + Number(w.amount), 0);
+
+  const nameFor = (id: string) => {
+    const u = users.find((x) => x.id === id);
+    return u?.full_name?.trim() || u?.email || "Unknown user";
+  };
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-topbar text-topbar-foreground">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4">
-          <span className="truncate text-sm font-bold sm:text-base">Cash Loading</span>
-          <Link
-            to={user ? "/dashboard" : "/auth"}
-            className="shrink-0 rounded-lg bg-card px-4 py-2 text-sm font-bold text-card-foreground"
-          >
-            {isLoading ? "…" : user ? "Dashboard" : "Sign in"}
-          </Link>
-        </div>
-      </header>
+    <AdminShell title="Admin Dashboard">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-card sm:p-5">
+          <h2 className="text-base font-bold">Latest requests</h2>
+          {withdrawals.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">No requests yet.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-border">
+              {withdrawals.slice(0, 6).map((w) => (
+                <li key={w.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{nameFor(w.user_id)}</p>
+                    <p className="truncate text-xs text-muted-foreground">{w.method_summary}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-sm font-bold">{formatUsd(Number(w.amount))}</span>
+                    <StatusBadge status={w.status} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:py-20">
-        <h1 className="max-w-2xl text-3xl font-extrabold tracking-tight sm:text-5xl">
-          Your balance, payout details and withdrawals in one place.
-        </h1>
-        <p className="mt-4 max-w-xl text-base text-muted-foreground">
-          Save your own Cash App, bank or card payout details, request a withdrawal and follow its
-          status. No withdrawal fees, no service charges, nothing to pay upfront.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            to={user ? "/dashboard" : "/auth"}
-            className="rounded-xl bg-navy px-6 py-3 text-sm font-bold text-navy-foreground transition-opacity hover:opacity-90"
-          >
-            {user ? "Open dashboard" : "Create your account"}
-          </Link>
-        </div>
-
-        <div className="mt-14 grid gap-4 sm:grid-cols-3">
-          {[
-            { t: "Clear balance view", d: "Deposits, pending and completed payouts, always up to date." },
-            { t: "Your payout details", d: "Cash App, bank transfer or card — saved securely to your account." },
-            { t: "Tracked requests", d: "Every withdrawal shows as pending, approved, completed or rejected." },
-          ].map((c) => (
-            <div key={c.t} className="rounded-2xl border border-border bg-card p-5 shadow-card">
-              <h2 className="text-base font-bold">{c.t}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{c.d}</p>
-            </div>
-          ))}
-        </div>
-      </main>
-    </div>
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-card sm:p-5">
+          <h2 className="text-base font-bold">Recent activity</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Total paid out to date: <span className="font-bold">{formatUsd(paidOut)}</span>
+          </p>
+          {activity.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">No activity yet.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-border">
+              {activity.slice(0, 6).map((a) => (
+                <li key={a.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{a.description}</p>
+                    <p className="truncate text-xs text-muted-foreground">{nameFor(a.user_id)}</p>
+                  </div>
+                  <span className="text-sm font-bold">{formatUsd(Number(a.amount ?? 0))}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </AdminShell>
   );
 }
