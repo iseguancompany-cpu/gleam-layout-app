@@ -58,7 +58,7 @@ function TransactionDetails({
   note: string;
   onNoteChange: (v: string) => void;
   onClose: () => void;
-  onAct: (status: WithdrawalStatus) => void;
+  onAct: (status: WithdrawalStatus, noteText?: string) => void;
   isPending: boolean;
 }) {
   return (
@@ -96,9 +96,7 @@ function TransactionDetails({
             <span className="text-base font-extrabold">{formatUsd(Number(withdrawal.amount))}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase
-
-text-muted-foreground">Date</span>
+            <span className="text-xs font-bold uppercase text-muted-foreground">Date</span>
             <span className="text-sm">
               {new Date(withdrawal.created_at).toLocaleString("en-US", {
                 month: "short",
@@ -133,7 +131,7 @@ text-muted-foreground">Date</span>
               <button
                 type="button"
                 disabled={isPending || !note.trim()}
-                onClick={() => onAct("pending")}
+                onClick={() => onAct(withdrawal.status, note.trim())}
                 className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 Send Note
@@ -187,6 +185,111 @@ function AdminApprovals() {
   const [notes, setNotes] = useState<Record<string, string>>({});
 
   const nameFor = (userId: string) => {
-    const user = users.find((u) => u.i
+    const user = users.find((u) => u.id === userId);
+    return user?.name ?? user?.email ?? "Unknown user";
+  };
 
+  const visibleWithdrawals =
+    filter === "all" ? withdrawals : withdrawals.filter((w) => w.status === filter);
 
+  const noteFor = (id: string) => notes[id] ?? "";
+  const setNoteFor = (id: string, value: string) =>
+    setNotes((prev) => ({ ...prev, [id]: value }));
+
+  const handleAct = (status: WithdrawalStatus, noteText?: string) => {
+    if (!activeWithdrawal) return;
+
+    update.mutate(
+      {
+        id: activeWithdrawal.id,
+        status,
+        ...(noteText ? { admin_note: noteText } : {}),
+      },
+      {
+        onSuccess: () => {
+          if (noteText) {
+            toast.success("Note sent to user");
+            setNoteFor(activeWithdrawal.id, "");
+            setActiveWithdrawal((prev) =>
+              prev ? { ...prev, admin_note: noteText } : prev,
+            );
+          } else {
+            toast.success(`Withdrawal marked as ${status}`);
+            setActiveWithdrawal(null);
+          }
+        },
+        onError: () => {
+          toast.error("Something went wrong, please try again");
+        },
+      },
+    );
+  };
+
+  return (
+    <AdminShell>
+      <div className="space-y-4 p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold">Transaction Approvals</h1>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {filters.map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFilter(f)}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
+                filter === f
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading withdrawals…</p>
+        ) : visibleWithdrawals.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No withdrawals in this view.</p>
+        ) : (
+          <div className="space-y-2">
+            {visibleWithdrawals.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                onClick={() => setActiveWithdrawal(w)}
+                className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-left hover:bg-secondary/50"
+              >
+                <div>
+                  <p className="text-sm font-semibold">{nameFor(w.user_id)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {payoutLabels[w.method_type as keyof typeof payoutLabels] ?? w.method_type} ·{" "}
+                    {w.method_summary}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-bold">{formatUsd(Number(w.amount))}</span>
+                  <StatusBadge status={w.status} />
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {activeWithdrawal && (
+        <TransactionDetails
+          withdrawal={activeWithdrawal}
+          nameFor={nameFor}
+          note={noteFor(activeWithdrawal.id)}
+          onNoteChange={(v) => setNoteFor(activeWithdrawal.id, v)}
+          onClose={() => setActiveWithdrawal(null)}
+          onAct={handleAct}
+          isPending={update.isPending}
+        />
+      )}
+    </AdminShell>
+  );
+}
