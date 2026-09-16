@@ -19,8 +19,7 @@ export const Route = createFileRoute("/_authenticated/admin/approvals")({
       { title: "Transaction Approvals — Cash Loading Portal" },
       {
         name: "description",
-        content:
-          "Review, approve or decline withdrawal requests and leave a note for the account holder.",
+        content: "Review, approve or decline withdrawal requests and leave a note for the account holder.",
       },
       { property: "og:title", content: "Transaction Approvals — Cash Loading Portal" },
       {
@@ -32,13 +31,7 @@ export const Route = createFileRoute("/_authenticated/admin/approvals")({
   component: AdminApprovals,
 });
 
-const filters: (WithdrawalStatus | "all")[] = [
-  "pending",
-  "approved",
-  "completed",
-  "rejected",
-  "all",
-];
+const filters: (WithdrawalStatus | "all")[] = ["pending", "approved", "completed", "rejected", "all"];
 
 type Withdrawal = {
   id: string;
@@ -58,7 +51,9 @@ function TransactionDetails({
   onNoteChange,
   onClose,
   onAct,
+  onSendNote,
   isPending,
+  isSendingNote,
 }: {
   withdrawal: Withdrawal;
   nameFor: (id: string) => string;
@@ -66,168 +61,124 @@ function TransactionDetails({
   onNoteChange: (v: string) => void;
   onClose: () => void;
   onAct: (status: WithdrawalStatus) => void;
+  onSendNote: () => void;
   isPending: boolean;
+  isSendingNote: boolean;
 }) {
-  const isPendingStatus = withdrawal.status === "pending";
-  const isApproved = withdrawal.status === "approved";
+  const isRequestPending = withdrawal.status === "pending";
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Withdrawal details"
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl"
+        className="w-full max-w-md rounded-3xl bg-card p-6 shadow-2xl text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal header */}
-        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-              Withdrawal request
-            </p>
-
-            <h2 className="mt-1 text-xl font-extrabold tracking-tight text-slate-950">
-              Transaction Details
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
-          >
-            ✕
-          </button>
+        {/* Circular Warning Icon */}
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-amber-500 bg-amber-50 text-amber-500">
+          <span className="text-3xl font-extrabold leading-none">!</span>
         </div>
 
-        {/* Status section */}
-        <div className="px-6 pt-5">
-          <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                Current status
-              </p>
+        {/* Title & Amount Subtitle */}
+        <h2 className="mt-4 text-2xl font-extrabold text-foreground">
+          {isRequestPending ? "Withdrawal Pending" : `Withdrawal ${withdrawal.status.toUpperCase()}`}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {isRequestPending
+            ? `${nameFor(withdrawal.user_id)} is waiting on a ${formatUsd(Number(withdrawal.amount))} withdrawal.`
+            : `${nameFor(withdrawal.user_id)}'s withdrawal of ${formatUsd(Number(withdrawal.amount))} is ${withdrawal.status}.`}
+        </p>
 
-              <div className="mt-2">
-                <StatusBadge status={withdrawal.status} />
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                Amount
-              </p>
-
-              <p className="mt-1 text-xl font-extrabold text-slate-950">
-                {formatUsd(Number(withdrawal.amount))}
-              </p>
-            </div>
+        {/* Details Card */}
+        <div className="mt-5 space-y-2 rounded-2xl border border-border bg-muted/20 p-4 text-left text-xs sm:text-sm">
+          <div className="flex justify-between gap-2">
+            <span className="font-semibold text-muted-foreground">Request ID</span>
+            <span className="font-mono text-xs font-bold text-foreground truncate max-w-[200px]">
+              {withdrawal.id}
+            </span>
           </div>
+
+          <div className="flex justify-between gap-2">
+            <span className="font-semibold text-muted-foreground">Name</span>
+            <span className="font-bold text-foreground">{nameFor(withdrawal.user_id)}</span>
+          </div>
+
+          <div className="flex justify-between gap-2">
+            <span className="font-semibold text-muted-foreground">Type</span>
+            <span className="text-right text-foreground">
+              {payoutLabels[withdrawal.method_type] ?? withdrawal.method_type} ·{" "}
+              {withdrawal.method_summary}
+            </span>
+          </div>
+
+          <div className="flex justify-between gap-2">
+            <span className="font-semibold text-muted-foreground">Status</span>
+            <span className="font-bold capitalize text-foreground">{withdrawal.status}</span>
+          </div>
+
+          <div className="flex justify-between gap-2">
+            <span className="font-semibold text-muted-foreground">Submitted</span>
+            <span className="text-muted-foreground">
+              {new Date(withdrawal.created_at).toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+
+          {/* Existing Admin Note */}
+          {withdrawal.admin_note?.trim() && (
+            <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <span className="block text-xs font-bold uppercase tracking-wider text-primary">
+                Admin Note
+              </span>
+              <p className="mt-1 text-xs sm:text-sm text-foreground">{withdrawal.admin_note}</p>
+            </div>
+          )}
         </div>
 
-        {/* Details */}
-        <div className="px-6 py-5">
-          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-100">
-            <div className="flex items-center justify-between gap-5 px-4 py-4">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                Name
-              </span>
-
-              <span className="text-right text-sm font-bold text-slate-900">
-                {nameFor(withdrawal.user_id)}
-              </span>
+        {/* Note input + actions, only while the request is still pending */}
+        {isRequestPending && (
+          <div className="mt-5 space-y-3 text-left">
+            <div className="flex gap-2">
+              <input
+                value={note}
+                onChange={(e) => onNoteChange(e.target.value)}
+                placeholder="Optional note for the account holder"
+                className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+              />
+              <button
+                type="button"
+                disabled={isSendingNote || !note.trim()}
+                onClick={onSendNote}
+                className="shrink-0 rounded-xl bg-navy px-4 py-2.5 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {isSendingNote ? "Sending…" : "Send Note"}
+              </button>
             </div>
 
-            <div className="flex items-center justify-between gap-5 px-4 py-4">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                Type
-              </span>
-
-              <span className="text-right text-sm font-semibold text-slate-700">
-                {payoutLabels[withdrawal.method_type]}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-5 px-4 py-4">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                Method
-              </span>
-
-              <span className="text-right text-sm font-semibold text-slate-700">
-                {withdrawal.method_summary}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-5 px-4 py-4">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                Date
-              </span>
-
-              <span className="text-right text-sm font-semibold text-slate-700">
-                {new Date(withdrawal.created_at).toLocaleString("en-US", {
-                  month: "short",
-                  day: "2-digit",
-                  year: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
-              </span>
-            </div>
-          </div>
-
-          {/* Admin reason / note */}
-          <div className="mt-5">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
-              Withdrawal reason / note
-            </p>
-
-            {withdrawal.admin_note ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                <p className="text-sm leading-6 text-slate-700">
-                  {withdrawal.admin_note}
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4">
-                <p className="text-sm text-slate-400">
-                  No reason or note has been provided.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Actions */}
-        {isPendingStatus && (
-          <div className="border-t border-slate-100 bg-slate-50 px-6 py-5">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
-              Admin note
-            </p>
-
-            <input
-              value={note}
-              onChange={(e) => onNoteChange(e.target.value)}
-              placeholder="Add a note for the account holder..."
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-900/5"
-            />
-
-            <div className="mt-3 flex gap-3">
+            <div className="flex gap-2">
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => onAct("approved")}
-                className="flex-1 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-xl bg-jade px-4 py-2.5 text-sm font-bold text-jade-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 Approve
               </button>
-
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => onAct("rejected")}
-                className="flex-1 rounded-2xl bg-red-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-xl bg-destructive px-4 py-2.5 text-sm font-bold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 Decline
               </button>
@@ -235,17 +186,28 @@ function TransactionDetails({
           </div>
         )}
 
-        {isApproved && (
-          <div className="border-t border-slate-100 bg-slate-50 px-6 py-5">
+        {withdrawal.status === "approved" && (
+          <div className="mt-5 border-t border-border pt-4">
             <button
               type="button"
               disabled={isPending}
               onClick={() => onAct("completed")}
-              className="w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-xl bg-navy px-6 py-2.5 text-sm font-bold text-navy-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               Mark as paid out
             </button>
           </div>
+        )}
+
+        {/* Close button for non-actionable states */}
+        {!isRequestPending && withdrawal.status !== "approved" && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-6 w-full max-w-[140px] mx-auto block rounded-xl bg-navy px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          >
+            OK
+          </button>
         )}
       </div>
     </div>
@@ -256,73 +218,69 @@ function AdminApprovals() {
   const { data: withdrawals = [], isPending } = useAdminWithdrawals();
   const { data: users = [] } = useAdminUsers();
   const update = useUpdateWithdrawalStatus();
-
-  const [filter, setFilter] =
-    useState<WithdrawalStatus | "all">("pending");
-
+  const [filter, setFilter] = useState<WithdrawalStatus | "all">("pending");
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [activeWithdrawal, setActiveWithdrawal] = useState<Withdrawal | null>(null);
+  const [sendingNoteId, setSendingNoteId] = useState<string | null>(null);
 
-  const [activeWithdrawal, setActiveWithdrawal] =
-    useState<Withdrawal | null>(null);
-
-  const rows =
-    filter === "all"
-      ? withdrawals
-      : withdrawals.filter((w) => w.status === filter);
+  const rows = filter === "all" ? withdrawals : withdrawals.filter((w) => w.status === filter);
 
   const nameFor = (id: string) => {
     const u = users.find((x) => x.id === id);
-
     return u?.full_name?.trim() || u?.email || "Unknown user";
   };
 
   const act = (id: string, status: WithdrawalStatus) => {
     update.mutate(
-      {
-        id,
-        status,
-        note: notes[id] ?? "",
-      },
+      { id, status, note: notes[id] ?? "" },
       {
         onSuccess: () => {
           toast.success(`Request marked ${status}`);
           setActiveWithdrawal(null);
         },
-
         onError: (err) =>
-          toast.error(
-            err instanceof Error
-              ? err.message
-              : "Could not update the request",
-          ),
+          toast.error(err instanceof Error ? err.message : "Could not update the request"),
+      },
+    );
+  };
+
+  // Sends the note to the user WITHOUT changing the withdrawal's status.
+  // Reuses the same mutation, but passes the withdrawal's current status back
+  // unchanged so only `note`/`admin_note` is written on the backend.
+  const sendNote = (withdrawal: Withdrawal) => {
+    const noteText = notes[withdrawal.id]?.trim();
+    if (!noteText) return;
+
+    setSendingNoteId(withdrawal.id);
+    update.mutate(
+      { id: withdrawal.id, status: withdrawal.status, note: noteText },
+      {
+        onSuccess: () => {
+          toast.success("Note sent to user");
+          setNotes((n) => ({ ...n, [withdrawal.id]: "" }));
+          // Reflect the note locally right away so the modal shows it
+          // without waiting on a refetch.
+          setActiveWithdrawal((prev) =>
+            prev && prev.id === withdrawal.id ? { ...prev, admin_note: noteText } : prev,
+          );
+        },
+        onError: (err) =>
+          toast.error(err instanceof Error ? err.message : "Could not send the note"),
+        onSettled: () => setSendingNoteId(null),
       },
     );
   };
 
   return (
     <AdminShell title="Transaction Approvals">
-      {/* Page heading */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-950">
-          Transactions
-        </h1>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Review and manage withdrawal requests.
-        </p>
-      </div>
-
-      {/* Filters */}
       <div className="flex flex-wrap gap-2">
         {filters.map((f) => (
           <button
             key={f}
             type="button"
             onClick={() => setFilter(f)}
-            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide transition ${
-              filter === f
-                ? "bg-slate-950 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            className={`rounded-full px-4 py-2 text-xs font-bold uppercase transition-colors ${
+              filter === f ? "bg-navy text-navy-foreground" : "bg-secondary hover:bg-accent"
             }`}
           >
             {f}
@@ -330,95 +288,62 @@ function AdminApprovals() {
         ))}
       </div>
 
-      {/* Transactions */}
       {isPending ? (
-        <div className="mt-5 rounded-2xl bg-white px-6 py-12 text-center shadow-sm">
-          <p className="text-sm text-slate-500">
-            Loading requests…
-          </p>
-        </div>
+        <p className="py-10 text-center text-sm text-muted-foreground">Loading requests…</p>
       ) : rows.length === 0 ? (
-        <div className="mt-5 rounded-2xl bg-white px-6 py-12 text-center shadow-sm">
-          <p className="text-sm text-slate-500">
-            Nothing here right now.
-          </p>
-        </div>
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          Nothing here right now.
+        </p>
       ) : (
-        <div className="mt-5 overflow-hidden rounded-2xl bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="border-b border-slate-100">
-                <tr>
-                  <th className="px-5 py-4 text-xs font-extrabold uppercase tracking-wide text-slate-400">
-                    Name
-                  </th>
-
-                  <th className="px-5 py-4 text-xs font-extrabold uppercase tracking-wide text-slate-400">
-                    Type
-                  </th>
-
-                  <th className="px-5 py-4 text-xs font-extrabold uppercase tracking-wide text-slate-400">
-                    Amount
-                  </th>
-
-                  <th className="px-5 py-4 text-right text-xs font-extrabold uppercase tracking-wide text-slate-400">
-                    More
-                  </th>
+        <div className="mt-5 overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead className="border-b-2 border-foreground/80 text-xs font-black uppercase tracking-wide text-foreground">
+              <tr>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Amount</th>
+                <th className="px-4 py-3 text-right">More</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {rows.map((w) => (
+                <tr key={w.id} className="hover:bg-muted/20">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium">
+                    {nameFor(w.user_id)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                    {payoutLabels[w.method_type] ?? w.method_type}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 font-semibold">
+                    {formatUsd(Number(w.amount))}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => setActiveWithdrawal(w)}
+                      className="rounded-full bg-blue-900 px-4 py-2 text-xs font-bold text-white hover:bg-blue-800"
+                    >
+                      More
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody className="divide-y divide-slate-100">
-                {rows.map((w) => (
-                  <tr
-                    key={w.id}
-                    className="transition hover:bg-slate-50"
-                  >
-                    <td className="px-5 py-4 font-bold text-slate-900">
-                      {nameFor(w.user_id)}
-                    </td>
-
-                    <td className="px-5 py-4 text-slate-500">
-                      {payoutLabels[w.method_type]}
-                    </td>
-
-                    <td className="px-5 py-4 font-extrabold text-slate-900">
-                      {formatUsd(Number(w.amount))}
-                    </td>
-
-                    <td className="px-5 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setActiveWithdrawal(w)}
-                        className="rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-800"
-                      >
-                        View More
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Details modal */}
       {activeWithdrawal && (
         <TransactionDetails
           withdrawal={activeWithdrawal}
           nameFor={nameFor}
           note={notes[activeWithdrawal.id] ?? ""}
-          onNoteChange={(v) =>
-            setNotes((n) => ({
-              ...n,
-              [activeWithdrawal.id]: v,
-            }))
-          }
+          onNoteChange={(v) => setNotes((n) => ({ ...n, [activeWithdrawal.id]: v }))}
           onClose={() => setActiveWithdrawal(null)}
-          onAct={(status) =>
-            act(activeWithdrawal.id, status)
-          }
+          onAct={(status) => act(activeWithdrawal.id, status)}
+          onSendNote={() => sendNote(activeWithdrawal)}
           isPending={update.isPending}
+          isSendingNote={sendingNoteId === activeWithdrawal.id}
         />
       )}
     </AdminShell>
