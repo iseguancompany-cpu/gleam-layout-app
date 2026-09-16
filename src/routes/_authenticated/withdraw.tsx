@@ -262,6 +262,60 @@ function Withdraw() {
           </form>
         )}
       </div>
+
+      {done && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={closeDone}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Withdrawal Pending"
+            className="w-full max-w-md rounded-2xl bg-card p-6 text-center shadow-2xl sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-center">
+              <CircleAlert className="h-16 w-16 text-amber-500" strokeWidth={1.5} />
+            </div>
+            <h2 className="mt-4 text-2xl font-extrabold text-foreground">Withdrawal Pending</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Waiting for your {formatUsd(done.amount)} withdrawal to process.
+            </p>
+
+            <dl className="mt-5 space-y-2 rounded-xl border border-border p-4 text-left text-sm">
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Request ID</dt>
+                <dd className="font-mono text-xs font-bold">{done.id}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Status</dt>
+                <dd className="font-bold capitalize">{done.status}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Submitted</dt>
+                <dd className="text-xs text-muted-foreground">
+                  {new Date(done.createdAt).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </dd>
+              </div>
+            </dl>
+
+            <button
+              type="button"
+              onClick={closeDone}
+              className="mt-6 rounded-xl bg-primary px-10 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
