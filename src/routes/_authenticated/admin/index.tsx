@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AdminShell } from "@/components/AdminShell";
-import { StatTile } from "@/components/StatTile";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
   formatUsd,
@@ -33,9 +32,6 @@ function AdminOverview() {
   const { data: withdrawals = [] } = useAdminWithdrawals();
   const { data: activity = [] } = useAdminActivity();
 
-  const totalBalance = users.reduce((sum, u) => sum + Number(u.balance ?? 0), 0);
-  const pending = withdrawals.filter((w) => w.status === "pending");
-  const pendingTotal = pending.reduce((sum, w) => sum + Number(w.amount), 0);
   const paidOut = withdrawals
     .filter((w) => w.status === "approved" || w.status === "completed")
     .reduce((sum, w) => sum + Number(w.amount), 0);
@@ -47,14 +43,7 @@ function AdminOverview() {
 
   return (
     <AdminShell title="Admin Dashboard">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <StatTile value={String(users.length)} label="Total Accounts" tone="navy" />
-        <StatTile value={formatUsd(totalBalance)} label="Balances On Platform" tone="jade" />
-        <StatTile value={String(pending.length)} label="Requests Awaiting Review" tone="ember" />
-        <StatTile value={formatUsd(pendingTotal)} label="Pending Amount" tone="sky" />
-      </div>
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border border-border bg-card p-4 shadow-card sm:p-5">
           <h2 className="text-base font-bold">Latest requests</h2>
           {withdrawals.length === 0 ? (
