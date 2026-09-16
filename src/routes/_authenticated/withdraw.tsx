@@ -71,67 +71,13 @@ function Withdraw() {
   const setDetail = (k: keyof Details) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setDetails((d) => ({ ...d, [k]: e.target.value }));
 
-  if (done) {
-    return (
-      <AppShell title="Withdraw">
-        <div className="mx-auto max-w-xl p-4 sm:p-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-full bg-amber-100 text-amber-600">
-              <Check className="h-8 w-8" />
-            </div>
-            <h2 className="mt-4 text-2xl font-extrabold">Withdrawal Pending</h2>
-            <div className="mt-6 space-y-4 rounded-xl border border-border p-4 text-sm w-full max-w-md text-left">
-              <p className="text-center font-semibold">
-                Your withdrawal of {formatUsd(done.amount)} is pending review.
-              </p>
-              <p className="text-center text-xs text-muted-foreground">
-                Your withdrawal is being reviewed, please check your email for further information.
-              </p>
-              <dl className="space-y-2">
-                <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Request ID</dt>
-                  <dd className="font-mono text-xs font-bold">{done.id}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Status</dt>
-                  <dd className="font-bold capitalize">{done.status}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Description</dt>
-                  <dd className="font-semibold">{done.summary}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Submitted</dt>
-                  <dd className="text-xs text-muted-foreground">
-                    {new Date(done.createdAt).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setDone(null);
-                setAmount("");
-                setType(null);
-                setDetails({ name: "", phone: "", email: "", address: "", loadingCode: "" });
-                setStep(1);
-              }}
-              className="mt-6 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
+  const closeDone = () => {
+    setDone(null);
+    setAmount("");
+    setType(null);
+    setDetails({ name: "", phone: "", email: "", address: "", loadingCode: "" });
+    setStep(1);
+  };
 
   return (
     <AppShell title="Withdraw">
