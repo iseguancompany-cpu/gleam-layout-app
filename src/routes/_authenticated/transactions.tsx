@@ -164,7 +164,8 @@ function Transactions() {
                 <th className="py-3 pr-3 font-bold">Name</th>
                 <th className="py-3 pr-3 font-bold">Type</th>
                 <th className="py-3 pr-3 font-bold">Amount</th>
-                <th className="py-3 font-bold">Status</th>
+                <th className="py-3 pr-3 font-bold">Status</th>
+                <th className="py-3 font-bold">Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -173,9 +174,14 @@ function Transactions() {
                   <td className="py-4 pr-3 font-semibold">{name}</td>
                   <td className="py-4 pr-3">
                     {payoutLabels[w.method_type] ?? w.method_type}
+                    {w.method_summary ? (
+                      <span className="block text-xs text-muted-foreground">
+                        {w.method_summary}
+                      </span>
+                    ) : null}
                   </td>
                   <td className="py-4 pr-3 font-bold">{formatUsd(Number(w.amount))}</td>
-                  <td className="py-4">
+                  <td className="py-4 pr-3">
                     <button
                       type="button"
                       onClick={() => setSelected(w)}
@@ -184,6 +190,15 @@ function Transactions() {
                     >
                       <StatusBadge status={w.status} />
                     </button>
+                  </td>
+                  <td className="py-4 text-xs text-muted-foreground whitespace-nowrap">
+                    {new Date(w.created_at).toLocaleString("en-US", {
+                      month: "short",
+                      day: "2-digit",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
                   </td>
                 </tr>
               ))}
@@ -202,17 +217,29 @@ function Transactions() {
                 <p className="truncate text-sm font-semibold">{name}</p>
                 <p className="text-xs text-muted-foreground">
                   {payoutLabels[w.method_type] ?? w.method_type}
+                  {w.method_summary ? ` · ${w.method_summary}` : ""}
                 </p>
                 <p className="mt-1 text-sm font-bold">{formatUsd(Number(w.amount))}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelected(w)}
-                className="shrink-0 inline-flex"
-                aria-label={`View details for ${w.status} withdrawal`}
-              >
-                <StatusBadge status={w.status} />
-              </button>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSelected(w)}
+                  className="inline-flex"
+                  aria-label={`View details for ${w.status} withdrawal`}
+                >
+                  <StatusBadge status={w.status} />
+                </button>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {new Date(w.created_at).toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
             </div>
           ))}
         </div>
