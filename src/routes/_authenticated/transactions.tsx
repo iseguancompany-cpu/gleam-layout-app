@@ -162,7 +162,7 @@ function Transactions() {
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
                 <th className="py-3 pr-3 font-bold">Name</th>
-                <th className="py-3 pr-3 font-bold">Type</th>
+                <th className="py-3 pr-3 font-bold">Method</th>
                 <th className="py-3 pr-3 font-bold">Amount</th>
                 <th className="py-3 pr-3 font-bold">Status</th>
                 <th className="py-3 font-bold">Date</th>
@@ -174,11 +174,6 @@ function Transactions() {
                   <td className="py-4 pr-3 font-semibold">{name}</td>
                   <td className="py-4 pr-3">
                     {payoutLabels[w.method_type] ?? w.method_type}
-                    {w.method_summary ? (
-                      <span className="block text-xs text-muted-foreground">
-                        {w.method_summary}
-                      </span>
-                    ) : null}
                   </td>
                   <td className="py-4 pr-3 font-bold">{formatUsd(Number(w.amount))}</td>
                   <td className="py-4 pr-3">
@@ -199,6 +194,7 @@ function Transactions() {
                       hour: "numeric",
                       minute: "2-digit",
                     })}
+                    {w.method_summary ? ` (${w.method_summary})` : ""}
                   </td>
                 </tr>
               ))}
@@ -217,7 +213,6 @@ function Transactions() {
                 <p className="truncate text-sm font-semibold">{name}</p>
                 <p className="text-xs text-muted-foreground">
                   {payoutLabels[w.method_type] ?? w.method_type}
-                  {w.method_summary ? ` · ${w.method_summary}` : ""}
                 </p>
                 <p className="mt-1 text-sm font-bold">{formatUsd(Number(w.amount))}</p>
               </div>
@@ -238,6 +233,7 @@ function Transactions() {
                     hour: "numeric",
                     minute: "2-digit",
                   })}
+                  {w.method_summary ? ` (${w.method_summary})` : ""}
                 </span>
               </div>
             </div>
