@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { AdminShell } from "@/components/AdminShell";
 import { StatusBadge } from "@/components/StatusBadge";
-import { supabase } from "@/integrations/supabase/client";
 import {
   formatUsd,
   payoutLabels,
@@ -53,9 +51,7 @@ function TransactionDetails({
   onNoteChange,
   onClose,
   onAct,
-  onSendNote,
   isPending,
-  isSendingNote,
 }: {
   withdrawal: Withdrawal;
   nameFor: (id: string) => string;
@@ -63,9 +59,7 @@ function TransactionDetails({
   onNoteChange: (v: string) => void;
   onClose: () => void;
   onAct: (status: WithdrawalStatus) => void;
-  onSendNote: () => void;
   isPending: boolean;
-  isSendingNote: boolean;
 }) {
   return (
     <div
@@ -89,14 +83,9 @@ function TransactionDetails({
             <span className="text-sm font-semibold">{nameFor(withdrawal.user_id)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <s
-
-pan className="text-xs font-bold uppercase text-muted-foreground">Type</span>
+            <span className="text-xs font-bold uppercase text-muted-foreground">Type</span>
             <span className="text-sm">
-              {payoutLabels[withdrawal.method_type as keyof typeof payoutLabels] ??
-                withdrawal.method_type}{" "}
-              ·{" "}
-              {withdrawal.method_summary}
+              {payoutLabels[withdrawal.method_type]} · {withdrawal.method_summary}
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -129,28 +118,18 @@ pan className="text-xs font-bold uppercase text-muted-foreground">Type</span>
 
         {withdrawal.status === "pending" && (
           <div className="mt-4 space-y-3 border-t border-border pt-4">
-            <div className="flex gap-2">
-              <input
-                value={note}
-                onChange={(e) => onNoteChange(e.target.value)}
-                placeholder="Type note for user..."
-                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary"
-              />
-              <button
-                type="button"
-                disabled={isSendingNote || !note.trim()}
-                onClick={onSendNote}
-                className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-              >
-                {isSendingNote ? "Sending..." : "Send Note"}
-              </button>
-            </div>
-            <div className="flex gap-2">
+            <input
+              value={note}
+              onChange={(e) => onNoteChange(e.target.value)}
+              placeholder="Optional note for the account holder"
+              className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+            />
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => onAct("approved")}
-                className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-xl bg-jade px-4 py-2.5 text-sm font-bold text-jade-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 Approve
               </button>
@@ -158,9 +137,9 @@ pan className="text-xs font-bold uppercase text-muted-foreground">Type</span>
                 type="button"
                 disabled={isPending}
                 onClick={() => onAct("rejected")}
-                className="flex-1 rounded-xl bg-destructive px-4 py-2.5 text-sm font-bold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-xl bg-destructive px-4 py-2.5 text-sm font-bold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                Reject
+                Decline
               </button>
             </div>
           </div>
@@ -171,11 +150,10 @@ pan className="text-xs font-bold uppercase text-muted-foreground">Type</span>
             <button
               type="button"
               disabled={isPending}
-
               onClick={() => onAct("completed")}
-              className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="rounded-xl bg-navy px-4 py-2.5 text-sm font-bold text-navy-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              Mark Completed
+              Mark as paid out
             </button>
           </div>
         )}
@@ -185,57 +163,23 @@ pan className="text-xs font-bold uppercase text-muted-foreground">Type</span>
 }
 
 function AdminApprovals() {
-  const { data: withdrawals = [], isLoading } = useAdminWithdrawals();
+  const { data: withdrawals = [], isPending } = useAdminWithdrawals();
   const { data: users = [] } = useAdminUsers();
   const update = useUpdateWithdrawalStatus();
-  const qc = useQueryClient();
-
   const [filter, setFilter] = useState<WithdrawalStatus | "all">("pending");
-  const [activeWithdrawal, setActiveWithdrawal] = useState<Withdrawal | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
-  const [isSendingNote, setIsSendingNote] = useState(false);
+  const [activeWithdrawal, setActiveWithdrawal] = useState<Withdrawal | null>(null);
 
-  const nameFor = (userId: string) => {
-    const user = users.find((u) => u.id === userId);
-    return user?.full_name ?? user?.email ?? "User";
+  const rows = filter === "all" ? withdrawals : withdrawals.filter((w) => w.status === filter);
+
+  const nameFor = (id: string) => {
+    const u = users.find((x) => x.id === id);
+    return u?.full_name?.trim() || u?.email || "Unknown user";
   };
 
-  const handleSendNote = async () => {
-    if (!activeWithdrawal) return;
-    const noteText = notes[activeWithdrawal.id]?.trim();
-    if (!noteText) return;
-
-    setIsSendingNote(true);
-    try {
-      const { error } = await supabase
-        .from("withdrawal_requests")
-        .update({
-          admin_note: noteText,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", activeWithdrawal.id);
-
-      if (error) throw error;
-
-      toast.success("Note sent to user");
-      setActiveWithdrawal((prev) => (prev ? { ...prev, admin_note: noteText } : null));
-      qc.invalidateQueries({ queryKey: ["admin_withdrawals"] });
-      qc.invalidateQueries({ queryKey: ["withdrawals"] });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to send note");
-    } finally {
-      setIsSendingNote(false);
-    }
-  };
-
-  const handleAct = (status: WithdrawalStatus) => {
-    if (!activeWithdrawal) return;
+  const act = (id: string, status: WithdrawalStatus) => {
     update.mutate(
-      {
-        id: activeWithdrawal.id,
-        status,
-        note: notes[activeWithdrawal.id] ?? activeWithdrawal.admin_note ?? "",
-      },
+      { id, status, note: notes[id] ?? "" },
       {
         onSuccess: () => {
           toast.success(`Request marked ${status}`);
@@ -247,20 +191,16 @@ function AdminApprovals() {
     );
   };
 
-  const filtered = withdrawals.filter((w) => (filter === "all" ? true : w.status === filter));
-
   return (
     <AdminShell title="Transaction Approvals">
-      <div className="flex flex-wrap gap-2 border-b border-border pb-4">
+      <div className="flex flex-wrap gap-2">
         {filters.map((f) => (
           <button
             key={f}
             type="button"
             onClick={() => setFilter(f)}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-colors ${
-              filter === f
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-muted"
+            className={`rounded-full px-4 py-2 text-xs font-bold uppercase transition-colors ${
+              filter === f ? "bg-navy text-navy-foreground" : "bg-secondary hover:bg-accent"
             }`}
           >
             {f}
@@ -268,82 +208,62 @@ function AdminApprovals() {
         ))}
       </div>
 
-      <div className="mt-4">
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading withdrawal requests...</p>
-        ) : filtered.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No requests found for this filter.</p>
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-border">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-muted/50 text-xs font-bold uppercase text-muted-foreground">
-                <tr>
-                  <th className=
-
-"px-4 py-3">User</th>
-                  <th className="px-4 py-3">Amount</th>
-                  <th className="px-4 py-3">Method</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Action</th>
+      {isPending ? (
+        <p className="py-10 text-center text-sm text-muted-foreground">Loading requests…</p>
+      ) : rows.length === 0 ? (
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          Nothing here right now.
+        </p>
+      ) : (
+        <div className="mt-5 overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead className="border-b-2 border-foreground/80 text-xs font-black uppercase tracking-wide text-foreground">
+              <tr>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Amount</th>
+                <th className="px-4 py-3 text-right">More</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {rows.map((w) => (
+                <tr key={w.id} className="hover:bg-muted/20">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium">
+                    {nameFor(w.user_id)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                    {payoutLabels[w.method_type]}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 font-semibold">
+                    {formatUsd(Number(w.amount))}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => setActiveWithdrawal(w)}
+                      className="rounded-full bg-blue-900 px-4 py-2 text-xs font-bold text-white hover:bg-blue-800"
+                    >
+                      More
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map((w) => (
-                  <tr key={w.id} className="hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium">{nameFor(w.user_id)}</td>
-                    <td className="px-4 py-3 font-bold">{formatUsd(Number(w.amount))}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {payoutLabels[w.method_type as keyof typeof payoutLabels] ?? w.method_type}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {new Date(w.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={w.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNotes((prev) => ({
-                            ...prev,
-                            [w.id]: prev[w.id] ?? w.admin_note ?? "",
-                          }));
-                          setActiveWithdrawal(w);
-                        }}
-                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
-                      >
-                        Review
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {activeWithdrawal && (
         <TransactionDetails
           withdrawal={activeWithdrawal}
           nameFor={nameFor}
           note={notes[activeWithdrawal.id] ?? ""}
-          onNoteChange={(v) =>
-            setNotes((prev) => ({
-              ...prev,
-              [activeWithdrawal.id]: v,
-            }))
-          }
+          onNoteChange={(v) => setNotes((n) => ({ ...n, [activeWithdrawal.id]: v }))}
           onClose={() => setActiveWithdrawal(null)}
-          onAct={handleAct}
-          onSendNote={handleSendNote}
+          onAct={(status) => act(activeWithdrawal.id, status)}
           isPending={update.isPending}
-          isSendingNote={isSendingNote}
         />
       )}
     </AdminShell>
   );
 }
-
