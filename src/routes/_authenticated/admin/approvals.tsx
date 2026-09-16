@@ -85,12 +85,13 @@ function TransactionDetails({
 
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-muted-foreground">Name</spa
-[9/16/2026 12:08 PM] Lovable: n>
+            <span className="text-xs font-bold uppercase text-muted-foreground">Name</span>
             <span className="text-sm font-semibold">{nameFor(withdrawal.user_id)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-muted-foreground">Type</span>
+            <s
+
+pan className="text-xs font-bold uppercase text-muted-foreground">Type</span>
             <span className="text-sm">
               {payoutLabels[withdrawal.method_type as keyof typeof payoutLabels] ??
                 withdrawal.method_type}{" "}
@@ -164,11 +165,13 @@ function TransactionDetails({
             </div>
           </div>
         )}
-[9/16/2026 12:08 PM] Lovable: {withdrawal.status === "approved" && (
+
+        {withdrawal.status === "approved" && (
           <div className="mt-4 border-t border-border pt-4">
             <button
               type="button"
               disabled={isPending}
+
               onClick={() => onAct("completed")}
               className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
@@ -272,11 +275,12 @@ function AdminApprovals() {
           <p className="text-sm text-muted-foreground">No requests found for this filter.</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-border">
-            <tab
-[9/16/2026 12:08 PM] Lovable: le className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm">
               <thead className="bg-muted/50 text-xs font-bold uppercase text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-3">User</th>
+                  <th className=
+
+"px-4 py-3">User</th>
                   <th className="px-4 py-3">Amount</th>
                   <th className="px-4 py-3">Method</th>
                   <th className="px-4 py-3">Date</th>
@@ -342,3 +346,4 @@ function AdminApprovals() {
     </AdminShell>
   );
 }
+
