@@ -366,13 +366,13 @@ className={labelCls}>Last 4 Digits of Card</label>
       {/* SUCCESS POPUP */}
             {/* FULL-SCREEN SUCCESS VIEW */}
       {done && (
-                <div
-          className="fixed inset-0 z-50 flex h-screen flex-col justify-between bg-background p-6 sm:p-10"
+                      <div
+          className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
           role="dialog"
           aria-modal="true"
         >
           {/* Top Section */}
-          <div className="pt-6 sm:pt-10">
+          <div className="flex-1 pt-6 sm:pt-10">
             {/* Cyan Checkmark Circle */}
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
               <svg
@@ -390,9 +390,9 @@ className={labelCls}>Last 4 Digits of Card</label>
               Withdrawal Placed Successfully
             </h1>
 
-          {/* Bottom Section (Note Div + OK Button) */}
-                       {/* Bottom Section (Note Div + OK Button) */}
-          <div className="mt-auto w-full space-y-4 pb-4">
+        
+                   {/* Bottom Section (Note Div + OK Button) */}
+          <div className="w-full space-y-4 pb-4">
               <p>
                 Your withdrawal of{" "}
                 <span className="font-bold text-foreground">{formatUsd(done.amount)}</span>{" "}
