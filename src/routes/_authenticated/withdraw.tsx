@@ -622,11 +622,11 @@ function Withdraw() {
 
 {/* SUCCESS POPUP */}
 {showSuccessModal && (
-  <div className="fixed inset-0 z-[100] min-h-screen w-full overflow-y-auto bg-white">
-    <div className="mx-auto flex min-h-screen w-full max-w-[760px] flex-col px-10 py-20 sm:px-16">
+  <div className="fixed inset-0 z-[100] flex min-h-screen w-full items-center justify-center bg-white">
+    <div className="flex min-h-screen w-full max-w-[760px] flex-col px-10 py-24 sm:px-16">
 
       {/* Success Icon */}
-      <div className="mb-12 flex h-24 w-24 items-center justify-center rounded-full bg-[#19B5D1]">
+      <div className="mb-16 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
         <Check
           className="h-12 w-12 text-white"
           strokeWidth={3}
@@ -634,14 +634,14 @@ function Withdraw() {
       </div>
 
       {/* Title */}
-      <h2 className="mb-12 text-left text-4xl font-bold leading-tight text-black sm:text-5xl">
+      <h2 className="mb-20 text-left text-4xl font-bold leading-tight text-black sm:text-5xl">
         Withdrawal Placed
         <br />
         Successfully
       </h2>
 
       {/* Withdrawal Message */}
-      <div className="max-w-[650px] space-y-6 text-center text-lg leading-8 text-gray-600">
+      <div className="max-w-[650px] space-y-10 text-center text-lg leading-8 text-gray-600">
         <p>
           Your withdrawal of{" "}
           <span className="font-bold text-black">
@@ -661,15 +661,15 @@ function Withdraw() {
       </div>
 
       {/* Wallet Address */}
-      <div className="mt-10 max-w-[650px]">
-        <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-6 py-5 text-left font-mono text-base leading-7 text-gray-700">
+      <div className="mt-16 max-w-[650px]">
+        <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-6 py-6 text-left font-mono text-base leading-7 text-gray-700">
           {walletAddress}
         </div>
 
         <button
           type="button"
           onClick={copyWalletAddress}
-          className="mt-4 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-5 text-lg font-bold text-black transition hover:bg-gray-50"
+          className="mt-6 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 text-lg font-bold text-black transition hover:bg-gray-50"
         >
           {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
         </button>
@@ -679,7 +679,7 @@ function Withdraw() {
       <button
         type="button"
         onClick={closeDone}
-        className="mt-8 w-full max-w-[650px] rounded-full bg-[#2616D9] py-5 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
+        className="mt-8 w-full max-w-[650px] rounded-full bg-[#2616D9] py-6 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
       >
         OK
       </button>
