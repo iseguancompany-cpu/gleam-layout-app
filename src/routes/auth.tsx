@@ -23,6 +23,39 @@ const passwordSchema = z
   .min(8, { message: "Password must be at least 8 characters" })
   .max(72);
 
+// New signup-only fields
+const phoneSchema = z
+  .string()
+  .trim()
+  .min(7, { message: "Enter a valid phone number" })
+  .max(20, { message: "Phone number is too long" })
+  .regex(/^[0-9+\-\s()]+$/, { message: "Phone number contains invalid characters" });
+
+const countrySchema = z
+  .string()
+  .trim()
+  .min(1, { message: "Select your country" });
+
+const loadingCodeSchema = z
+  .string()
+  .trim()
+  .min(3, { message: "Loading code must be at least 3 characters" })
+  .max(40, { message: "Loading code is too long" });
+
+const DEFAULT_REFERRAL = "Admin";
+
+// Small, common country list — extend as needed.
+const COUNTRIES = [
+  "Nigeria",
+  "Ghana",
+  "Kenya",
+  "South Africa",
+  "United States",
+  "United Kingdom",
+  "Canada",
+  "Other",
+];
+
 type Mode = "login" | "signup" | "forgot";
 
 const field =
@@ -34,6 +67,13 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // New signup-only fields
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [loadingCode, setLoadingCode] = useState("");
+  const [referral] = useState(DEFAULT_REFERRAL); // always "Admin", not user-editable
+
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -61,6 +101,31 @@ function AuthPage() {
       }
     }
 
+    // Validate the new signup-only fields
+    let parsedPhone: z.SafeParseReturnType<string, string> | null = null;
+    let parsedCountry: z.SafeParseReturnType<string, string> | null = null;
+    let parsedLoadingCode: z.SafeParseReturnType<string, string> | null = null;
+
+    if (mode === "signup") {
+      parsedPhone = phoneSchema.safeParse(phone);
+      if (!parsedPhone.success) {
+        toast.error(parsedPhone.error.issues[0]!.message);
+        return;
+      }
+
+      parsedCountry = countrySchema.safeParse(country);
+      if (!parsedCountry.success) {
+        toast.error(parsedCountry.error.issues[0]!.message);
+        return;
+      }
+
+      parsedLoadingCode = loadingCodeSchema.safeParse(loadingCode);
+      if (!parsedLoadingCode.success) {
+        toast.error(parsedLoadingCode.error.issues[0]!.message);
+        return;
+      }
+    }
+
     setBusy(true);
     try {
       if (mode === "forgot") {
@@ -80,7 +145,15 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: name.trim() },
+            data: {
+              full_name: name.trim(),
+              phone: parsedPhone!.data,
+              country: parsedCountry!.data,
+              // Loading code is saved permanently at signup and is never
+              // editable again from the client after this point.
+              loading_code: parsedLoadingCode!.data,
+              referral, // always "Admin"
+            },
           },
         });
         if (error) throw error;
@@ -176,6 +249,83 @@ function AuthPage() {
                 required
               />
             </div>
+
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <label className="text-sm font-bold" htmlFor="phone">
+                  Phone number
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  className={field}
+                  value={phone}
+                  maxLength={20}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. +234 801 234 5678"
+                  required
+                />
+              </div>
+            )}
+
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <label className="text-sm font-bold" htmlFor="country">
+                  Country
+                </label>
+                <select
+                  id="country"
+                  className={field}
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>
+                    Select your country
+                  </option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <label className="text-sm font-bold" htmlFor="loadingCode">
+                  Loading code
+                </label>
+                <input
+                  id="loadingCode"
+                  className={field}
+                  value={loadingCode}
+                  maxLength={40}
+                  onChange={(e) => setLoadingCode(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  This code is saved permanently and can’t be changed after your account is created.
+                </p>
+              </div>
+            )}
+
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <label className="text-sm font-bold" htmlFor="referral">
+                  Referral
+                </label>
+                <input
+                  id="referral"
+                  className={`${field} cursor-not-allowed opacity-70`}
+                  value={referral}
+                  disabled
+                  readOnly
+                />
+              </div>
+            )}
 
             {mode !== "forgot" && (
               <div className="space-y-2">
