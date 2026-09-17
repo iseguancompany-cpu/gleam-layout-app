@@ -46,7 +46,6 @@ type UserRow = {
   payment_address?: string | null;
   account_status?: string | null;
   admin_notes?: string | null;
-  loading_code?: string | null;
   roles?: string[];
 };
 
@@ -194,6 +193,54 @@ function EditUserCard({
           >
             ×
           </button>
+        </div>
+
+        {/* User Details */}
+        <div className="mb-6 space-y-4">
+          {/* Name */}
+          <div>
+            <label className={labelCls}>Name</label>
+
+            <input
+              type="text"
+              className={field}
+              value={values.full_name}
+              onChange={(event) =>
+                updateField("full_name", event.target.value)
+              }
+              placeholder="Full Name"
+            />
+          </div>
+
+          {/* Email Address */}
+          <div>
+            <label className={labelCls}>Email Address</label>
+
+            <input
+              type="email"
+              className={field}
+              value={values.email}
+              onChange={(event) =>
+                updateField("email", event.target.value)
+              }
+              placeholder="Email Address"
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label className={labelCls}>Phone Number</label>
+
+            <input
+              type="tel"
+              className={field}
+              value={values.phone}
+              onChange={(event) =>
+                updateField("phone", event.target.value)
+              }
+              placeholder="Phone Number"
+            />
+          </div>
         </div>
 
         {/* Pending Balance */}
