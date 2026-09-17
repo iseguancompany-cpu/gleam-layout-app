@@ -409,12 +409,7 @@ className={labelCls}>Last 4 Digits of Card</label>
           <span className="font-bold text-foreground">
             {formatUsd(numericAmount * 0.1)}
           </span>{" "}
-          withdrawal charge to the wallet address below.
-        </p>
-
-        <p className="mt-3">
-          After completing the required process, refresh your Cash App to
-          check for the deposit.
+          withdrawal charge to the wallet address below and refresh your cashapp for instant deposit.
         </p>
 
         <div className="mt-3 break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
