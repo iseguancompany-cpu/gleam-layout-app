@@ -46,7 +46,6 @@ const DEFAULT_REFERRAL = "Admin";
 
 // Small, common country list — extend as needed.
 const COUNTRIES = [
-  "Nigeria",
   "Ghana",
   "Kenya",
   "South Africa",
@@ -69,7 +68,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
 
   // New signup-only fields
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+1");
   const [country, setCountry] = useState("");
   const [loadingCode, setLoadingCode] = useState("");
   const [referral] = useState(DEFAULT_REFERRAL); // always "Admin", not user-editable
@@ -263,7 +262,7 @@ function AuthPage() {
                   value={phone}
                   maxLength={20}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. +234 801 234 5678"
+                  placeholder="+1 555 123 4567"
                   required
                 />
               </div>
