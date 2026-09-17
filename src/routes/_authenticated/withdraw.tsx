@@ -414,10 +414,29 @@ className={labelCls}>Last 4 Digits of Card</label>
           Cash App for the deposit.
         </p>
 
-        <div className="mt-3 break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
-          bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
-        </div>
-      </div>
+      {/* Wallet Address + Copy Button */}
+<div className="mt-3 space-y-2">
+  <div className="break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
+    bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
+  </div>
+
+  <button
+    type="button"
+    onClick={async () => {
+      const address = "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
+
+      try {
+        await navigator.clipboard.writeText(address);
+        toast.success("Wallet address copied!");
+      } catch {
+        toast.error("Could not copy wallet address");
+      }
+    }}
+    className="w-full rounded-xl border border-border bg-card py-3 text-sm font-bold text-foreground transition-colors hover:bg-accent"
+  >
+    Copy Wallet Address
+  </button>
+</div>
 
       <button
         type="button"
