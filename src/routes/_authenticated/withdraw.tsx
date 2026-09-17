@@ -386,18 +386,17 @@ className={labelCls}>Last 4 Digits of Card</label>
             </div>
 
             {/* Title & Amount */}
-            <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
+                       <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
               Withdrawal Placed Successfully
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Your withdrawal of {formatUsd(done.amount)} has been placed.
-            </p>
-          </div>
 
           {/* Bottom Section (Note Div + OK Button) */}
-          <div className="w-full space-y-4 pb-4">
-            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
-              <p>Check your email for confirmation.</p>
+              <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+              <p>
+                Your withdrawal of{" "}
+                <span className="font-bold text-foreground">{formatUsd(done.amount)}</span>{" "}
+                has been placed successfully.
+              </p>
             </div>
 
             <button
