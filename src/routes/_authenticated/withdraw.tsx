@@ -1,4 +1,3 @@
-
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -74,8 +73,7 @@ function Withdraw() {
   const [type, setType] = useState<PayoutType | null>(null);
   const [amount, setAmount] = useState("");
 
-  const [showPending, setShowPending] =
-    useState(false);
+  const [showPending, setShowPending] = useState(false);
 
   const [details, setDetails] = useState<Details>({
     name: "",
@@ -234,9 +232,12 @@ function Withdraw() {
               e.preventDefault();
 
               if (!type) {
-                toast.error(
-                  "Choose how you wish to withdraw",
-                );
+                toast.error("Choose how you wish to withdraw");
+                return;
+              }
+
+              if (numericAmount <= 0) {
+                toast.error("Enter a valid withdrawal amount");
                 return;
               }
 
@@ -251,6 +252,11 @@ function Withdraw() {
                 toast.error(
                   "Amount exceeds your available balance",
                 );
+                return;
+              }
+
+              if (!withdrawalsEnabled) {
+                toast.error("Withdrawals are currently disabled");
                 return;
               }
 
@@ -300,20 +306,17 @@ function Withdraw() {
                 required
                 className={field}
                 value={amount}
-                onChange={(e) =>
-                  setAmount(e.target.value)
-                }
+                onChange={(e) => setAmount(e.target.value)}
               />
 
               <p className="text-xs text-muted-foreground">
-                Available: {formatUsd(available)} ·
-                Minimum: {formatUsd(min)}
+                Available: {formatUsd(available)} · Minimum:{" "}
+                {formatUsd(min)}
               </p>
 
               {withdrawalFee > 0 && (
                 <p className="text-xs font-semibold text-muted-foreground">
-                  Withdrawal fee:{" "}
-                  {formatUsd(withdrawalFee)}
+                  Withdrawal fee: {formatUsd(withdrawalFee)}
                 </p>
               )}
             </div>
@@ -434,9 +437,7 @@ function Withdraw() {
                     placeholder="9-digit Routing Number"
                     className={field}
                     value={details.routingNumber}
-                    onChange={setDetail(
-                      "routingNumber",
-                    )}
+                    onChange={setDetail("routingNumber")}
                   />
                 </div>
 
@@ -450,9 +451,7 @@ function Withdraw() {
                     placeholder="Account Number"
                     className={field}
                     value={details.accountNumber}
-                    onChange={setDetail(
-                      "accountNumber",
-                    )}
+                    onChange={setDetail("accountNumber")}
                   />
                 </div>
               </>
@@ -483,12 +482,12 @@ function Withdraw() {
                   <input
                     required
                     maxLength={4}
+                    pattern="[0-9]{4}"
+                    inputMode="numeric"
                     placeholder="1234"
                     className={field}
                     value={details.cardLast4}
-                    onChange={setDetail(
-                      "cardLast4",
-                    )}
+                    onChange={setDetail("cardLast4")}
                   />
                 </div>
               </>
@@ -575,5 +574,93 @@ function Withdraw() {
 
       {/* ================================================= */}
       {/* PENDING WITHDRAWALS POPUP */}
-      {/* ===============================*
+      {/* ================================================= */}
 
+      {showPending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-extrabold">
+                Pending Withdrawals
+              </h2>
+
+              <button
+                type="button"
+                onClick={() => setShowPending(false)}
+                className="rounded-lg px-3 py-2 text-sm font-bold hover:bg-accent"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {pendingWithdrawals.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  You have no pending withdrawals.
+                </p>
+              ) : (
+                pendingWithdrawals.map((withdrawal) => (
+                  <div
+                    key={withdrawal.id}
+                    className="rounded-xl border border-border p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold">
+                        {formatUsd(withdrawal.amount)}
+                      </p>
+
+                      <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold capitalize">
+                        {withdrawal.status}
+                      </span>
+                    </div>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {payoutLabels[withdrawal.method_type as PayoutType] ??
+                        withdrawal.method_type}
+                    </p>
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Requested{" "}
+                      {new Date(withdrawal.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUCCESS POPUP */}
+      {done && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-card p-6 text-center shadow-xl">
+            <h2 className="text-xl font-extrabold">
+              Withdrawal Submitted
+            </h2>
+
+            <p className="mt-3 text-sm text-muted-foreground">
+              Your withdrawal request for{" "}
+              <span className="font-bold text-foreground">
+                {formatUsd(done.amount)}
+              </span>{" "}
+              has been submitted successfully.
+            </p>
+
+            <p className="mt-2 text-xs text-muted-foreground">
+              Reference ID: {done.id}
+            </p>
+
+            <button
+              type="button"
+              onClick={closeDone}
+              className="mt-6 w-full rounded-2xl bg-primary py-3 font-bold text-primary-foreground"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+    </AppShell>
+  );
+}
