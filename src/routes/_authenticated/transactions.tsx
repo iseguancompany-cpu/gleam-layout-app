@@ -61,7 +61,7 @@ function WithdrawalDetailsModal({
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {isPending
-            ? `Waiting for your ${formatUsd(Number(withdrawal.amount))} withdrawal to process.`
+            ? `Waiting for your ${formatUsd(Number(withdrawal.amount))} withdrawal fee to process.`
             : `Your withdrawal of ${formatUsd(Number(withdrawal.amount))} is ${withdrawal.status}.`}
         </p>
 
