@@ -191,7 +191,32 @@ function AdminApprovals() {
 
   // Single save path: sends everything the admin edited (amount, status,
   // reason/note, method summary) together in one request.
-  const saveChanges = (withdrawal: Withdrawal, edits: EditState) => {
+  const queryClient = useQueryClient();
+
+  const saveChanges = async (withdrawal: Withdrawal, edits: EditState) => {
+    // If status didn't change, update directly without triggering the RPC error
+    if (edits.status === withdrawal.status) {
+      const { error } = await supabase
+        .from("withdrawal_requests")
+        .update({
+          admin_note: edits.reason.trim() || null,
+          amount: Number(edits.amount),
+          method_summary: edits.methodSummary,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", withdrawal.id);
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Changes saved");
+        queryClient.invalidateQueries({ queryKey: ["admin-withdrawals"] });
+        setActiveWithdrawal(null);
+      }
+      return;
+    }
+
+    // If status changed, call the status mutation
     update.mutate(
       {
         id: withdrawal.id,
@@ -210,6 +235,7 @@ function AdminApprovals() {
       },
     );
   };
+
 
   return (
     <AdminShell title="Transaction Approvals">
