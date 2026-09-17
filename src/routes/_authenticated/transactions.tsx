@@ -65,50 +65,15 @@ function WithdrawalDetailsModal({
             : `Your withdrawal of ${formatUsd(Number(withdrawal.amount))} is ${withdrawal.status}.`}
         </p>
 
-        {/* Details Card */}
-        <div className="mt-5 space-y-2 rounded-2xl border border-border bg-muted/20 p-4 text-left text-xs sm:text-sm">
-          <div className="flex justify-between gap-2">
-            <span className="font-semibold text-muted-foreground">Request ID</span>
-            <span className="font-mono text-xs font-bold text-foreground truncate max-w-[200px]">
-              {withdrawal.id}
-            </span>
+              {/* Admin Note */}
+        {withdrawal.admin_note?.trim() && (
+          <div className="mt-5 rounded-2xl border border-border bg-muted/20 p-4 text-left">
+            <p className="whitespace-pre-wrap text-sm text-foreground">
+              {withdrawal.admin_note}
+            </p>
           </div>
+        )}
 
-          <div className="flex justify-between gap-2">
-            <span className="font-semibold text-muted-foreground">Payment Method</span>
-            <span className="text-right text-foreground">
-              {payoutLabels[withdrawal.method_type]
-?? withdrawal.method_type}
-              {withdrawal.method_summary ? ` · ${withdrawal.method_summary}` : ""}
-            </span>
-          </div>
-
-          <div className="flex justify-between gap-2">
-            <span className="font-semibold text-muted-foreground">Status</span>
-            <span className="font-bold capitalize text-foreground">{withdrawal.status}</span>
-          </div>
-
-          <div className="flex justify-between gap-2">
-            <span className="font-semibold text-muted-foreground">Submitted</span>
-            <span className="text-muted-foreground">
-              {new Date(withdrawal.created_at).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </span>
-          </div>
-
-          {withdrawal.admin_note?.trim() && (
-            <div className="rounded-xl border border-border bg-card p-3">
-              <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">
-                {withdrawal.admin_note}
-              </p>
-            </div>
-          )}
-        </div>
 
         <button
           type="button"
