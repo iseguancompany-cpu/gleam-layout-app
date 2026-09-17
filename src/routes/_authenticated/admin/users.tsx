@@ -6,6 +6,7 @@ import { AdminShell } from "@/components/AdminShell";
 import {
   useAdminUpdateUser,
   useAdminUsers,
+  useAdminAddTransaction, // NEW — see note below on implementing this in @/lib/api
   type AdminUserEdit,
 } from "@/lib/api";
 
@@ -25,9 +26,30 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 const field =
   "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40";
 const labelCls = "text-xs font-bold uppercase text-muted-foreground";
+const readOnlyField = `${field} bg-muted/40 text-muted-foreground cursor-not-allowed`;
 
 const verificationOptions = ["unverified", "pending", "verified", "rejected"] as const;
 
+function formatCurrency(cents: number | null | undefined) {
+  const value = (cents ?? 0) / 100;
+  return value.toLocaleString(undefined, { style: "currency", currency: "USD" });
+}
+
+/**
+ * IMPORTANT — balance fields are DERIVED, not stored-and-edited directly.
+ *
+ * `balance_cents`, `pending_balance_cents`, and `total_balance_cents` should
+ * come from your backend as computed values (e.g. a SQL view or aggregate
+ * query over a `transactions` table: SUM of cleared transactions for
+ * balance, SUM of uncleared/holding transactions for pending, and their sum
+ * for total). They are NOT part of the editable form payload.
+ *
+ * Any change to a user's money moves through `useAdminAddTransaction`,
+ * which should insert an auditable row (amount, type, reason, admin_id,
+ * created_at) into your transactions table server-side, then the balance
+ * fields recompute naturally on next fetch. This gives you a real ledger
+ * and an audit trail instead of an admin overwriting a raw number.
+ */
 type UserRow = {
   id: string;
   full_name: string;
@@ -38,10 +60,16 @@ type UserRow = {
   account_status?: string | null;
   admin_notes?: string | null;
   loading_code?: string | null;
+  withdrawal_limit_cents?: number | null;
+  balance_cents?: number | null;
+  pending_balance_cents?: number | null;
+  total_balance_cents?: number | null;
 };
 
 function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void }) {
   const save = useAdminUpdateUser();
+  const addTransaction = useAdminAddTransaction();
+
   const [values, setValues] = useState({
     full_name: user.full_name ?? "",
     phone: user.phone ?? "",
@@ -51,7 +79,13 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
     account_status: user.account_status ?? "active",
     admin_notes: user.admin_notes ?? "",
     loading_code: user.loading_code ?? "",
+    withdrawal_limit_cents: user.withdrawal_limit_cents ?? 0,
   });
+
+  const [txOpen, setTxOpen] = useState(false);
+  const [txAmount, setTxAmount] = useState("");
+  const [txType, setTxType] = useState<"credit" | "debit">("credit");
+  const [txReason, setTxReason] = useState("");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -61,12 +95,37 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
+  const set = (k: keyof AdminUserEdit) => (v: string | number) =>
+    setValues((s) => ({ ...s, [k]: v }));
 
-  // Generates a short, admin-issued code (e.g. 6 uppercase alphanumeric chars).
   const generateCode = () => {
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();
     set("loading_code")(code);
+  };
+
+  const submitTransaction = () => {
+    const cents = Math.round(parseFloat(txAmount || "0") * 100);
+    if (!cents || cents <= 0) {
+      toast.error("Enter a valid amount");
+      return;
+    }
+    if (!txReason.trim()) {
+      toast.error("A reason is required for the audit log");
+      return;
+    }
+    addTransaction.mutate(
+      { userId: user.id, amountCents: cents, type: txType, reason: txReason.trim() },
+      {
+        onSuccess: () => {
+          toast.success("Transaction recorded");
+          setTxAmount("");
+          setTxReason("");
+          setTxOpen(false);
+        },
+        onError: (err) =>
+          toast.error(err instanceof Error ? err.message : "Could not record transaction"),
+      },
+    );
   };
 
   return (
@@ -124,8 +183,86 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
           </div>
           <div className="space-y-1">
             <label className={labelCls}>User ID</label>
-            <input readOnly className={`${field} text-muted-foreground`} value={user.id} />
+            <input readOnly className={readOnlyField} value={user.id} />
           </div>
+
+          {/* --- Balances: read-only, derived from the transactions ledger --- */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1">
+              <label className={labelCls}>Balance</label>
+              <input readOnly className={readOnlyField} value={formatCurrency(user.balance_cents)} />
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}>Pending</label>
+              <input readOnly className={readOnlyField} value={formatCurrency(user.pending_balance_cents)} />
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}>Total</label>
+              <input readOnly className={readOnlyField} value={formatCurrency(user.total_balance_cents)} />
+            </div>
+          </div>
+
+          {/* --- The only way to move money: an audited transaction --- */}
+          <div className="rounded-lg border border-dashed border-border p-3">
+            <button
+              type="button"
+              onClick={() => setTxOpen((v) => !v)}
+              className="text-xs font-bold uppercase text-primary hover:underline"
+            >
+              {txOpen ? "Cancel adjustment" : "+ Add transaction (credit/debit)"}
+            </button>
+
+            {txOpen && (
+              <div className="mt-3 space-y-2">
+                <div className="flex gap-2">
+                  <select
+                    className={field}
+                    value={txType}
+                    onChange={(e) => setTxType(e.target.value as "credit" | "debit")}
+                  >
+                    <option value="credit">Credit (add funds)</option>
+                    <option value="debit">Debit (remove funds)</option>
+                  </select>
+                  <input
+                    className={field}
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Amount (USD)"
+                    value={txAmount}
+                    onChange={(e) => setTxAmount(e.target.value)}
+                  />
+                </div>
+                <input
+                  className={field}
+                  placeholder="Reason (required, goes in audit log)"
+                  value={txReason}
+                  onChange={(e) => setTxReason(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={submitTransaction}
+                  disabled={addTransaction.isPending}
+                  className="w-full rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 disabled:opacity-50"
+                >
+                  {addTransaction.isPending ? "Recording..." : "Record transaction"}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <label className={labelCls}>Withdrawal Limit</label>
+            <input
+              className={field}
+              type="number"
+              step="0.01"
+              min="0"
+              value={(values.withdrawal_limit_cents / 100).toString()}
+              onChange={(e) => set("withdrawal_limit_cents")(Math.round(parseFloat(e.target.value || "0") * 100))}
+            />
+          </div>
+
           <div className="space-y-1">
             <label className={labelCls}>ID Verification Status</label>
             <select
@@ -161,8 +298,6 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
             </select>
           </div>
 
-          {/* Loading Code — admin-issued, shown permanently to the user
-              on their Withdraw page. */}
           <div className="space-y-1">
             <label className={labelCls}>Loading Code</label>
             <div className="flex gap-2">
@@ -246,61 +381,62 @@ function AdminUsers() {
         ) : error ? (
           <div className="py-6 text-center text-sm text-destructive">Could not load users.</div>
         ) : (
-          <>
-            {/* Table view on all screen sizes; scrolls horizontally on narrow viewports */}
-            <div className="overflow-x-auto rounded-xl border border-border bg-card">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="border-b-2 border-foreground/80 text-xs font-black uppercase tracking-wide text-foreground">
-                  <tr>
-                    <th className="px-4 py-3">Name</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Phone</th>
-                    <th className="px-4 py-3 text-right">More</th>
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead className="border-b-2 border-foreground/80 text-xs font-black uppercase tracking-wide text-foreground">
+                <tr>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Phone</th>
+                  <th className="px-4 py-3">Balance</th>
+                  <th className="px-4 py-3 text-right">More</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filtered.map((u) => (
+                  <tr key={u.id} className="hover:bg-muted/20">
+                    <td className="whitespace-nowrap px-4 py-3 font-medium">
+                      {u.full_name || "Unnamed user"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground underline">
+                      {u.email || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                      {u.phone || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                      {formatCurrency(u.balance_cents)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setActiveUser(u)}
+                          className="rounded-full bg-blue-900 px-4 py-2 text-xs font-bold text-white hover:bg-blue-800"
+                        >
+                          View User
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toast.info("User deletion is protected.")}
+                          className="rounded-full bg-red-700 px-4 py-2 text-xs font-bold text-white hover:bg-red-800"
+                        >
+                          Delete User
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filtered.map((u) => (
-                    <tr key={u.id} className="hover:bg-muted/20">
-                      <td className="whitespace-nowrap px-4 py-3 font-medium">
-                        {u.full_name || "Unnamed user"}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground underline">
-                        {u.email || "—"}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                        {u.phone || "—"}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setActiveUser(u)}
-                            className="rounded-full bg-blue-900 px-4 py-2 text-xs font-bold text-white hover:bg-blue-800"
-                          >
-                            View User
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => toast.info("User deletion is protected.")}
-                            className="rounded-full bg-red-700 px-4 py-2 text-xs font-bold text-white hover:bg-red-800"
-                          >
-                            Delete User
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
-                        No users found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
+                      No users found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {activeUser && (
