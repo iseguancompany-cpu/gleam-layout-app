@@ -17,6 +17,7 @@ type WithdrawalRow = NonNullable<
 type WithdrawalWithCashappTag = WithdrawalRow & {
   cashapp_tag?: string | null;
   cashtag?: string | null;
+  method_summary?: string | null;
 };
 
 export const Route = createFileRoute("/_authenticated/transactions")({
@@ -41,35 +42,26 @@ export const Route = createFileRoute("/_authenticated/transactions")({
   component: Transactions,
 });
 
-function maskCashtag(value?: string | null) {
-  if (!value) return "";
-
-  const cashtag = value.startsWith("$")
-    ? value.slice(1)
-    : value;
-
-  if (!cashtag) return "";
-
-  if (cashtag.length <= 2) {
-    return `$${cashtag.charAt(0)}*`;
-  }
-
-  if (cashtag.length <= 4) {
-    return `$${cashtag.charAt(0)}***`;
-  }
-
-  return `$${cashtag.charAt(0)}***${cashtag.charAt(cashtag.length - 1)}`;
-}
-
 function getWithdrawalCashtag(withdrawal: WithdrawalRow) {
   const withdrawalData = withdrawal as WithdrawalWithCashappTag;
 
-  const cashtag =
+  let cashtag =
     withdrawalData.cashapp_tag ??
     withdrawalData.cashtag ??
     "";
 
-  return maskCashtag(cashtag);
+  // Extract the actual Cashtag saved inside method_summary
+  if (!cashtag && withdrawalData.method_summary) {
+    const match = withdrawalData.method_summary.match(
+      /Cashtag:\s*([^·]+)/i,
+    );
+
+    cashtag = match?.[1]?.trim() ?? "";
+  }
+
+  if (!cashtag) return "";
+
+  return cashtag.startsWith("$") ? cashtag : `$${cashtag}`;
 }
 
 function WithdrawalDetailsModal({
@@ -147,6 +139,7 @@ function WithdrawalDetailsModal({
 function Transactions() {
   const { data: profile } = useProfile();
   const { data: withdrawals = [], isLoading } = useWithdrawals();
+
   const [selected, setSelected] = useState<WithdrawalRow | null>(
     null,
   );
@@ -182,7 +175,10 @@ function Transactions() {
 
             <tbody className="divide-y divide-border">
               {withdrawals.map((w) => {
-                const cashtag = getWithdrawalCashtag(w);
+                const cashtag =
+                  w.method_type === "cashapp"
+                    ? getWithdrawalCashtag(w)
+                    : "";
 
                 return (
                   <tr key={w.id}>
