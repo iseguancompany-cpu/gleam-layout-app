@@ -622,30 +622,26 @@ function Withdraw() {
 
 {/* SUCCESS POPUP */}
 {showSuccessModal && (
-  <div className="fixed inset-0 z-[100] flex min-h-screen w-full items-center justify-center bg-white">
-    <div className="flex min-h-screen w-full items-center justify-center px-6 py-10">
-      <div className="flex w-full max-w-[650px] flex-col items-center">
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 py-6">
+    <div className="flex w-full max-w-[430px] flex-col rounded-[28px] bg-white p-6 shadow-2xl">
 
-        {/* Success Icon */}
-        <div className="mb-16 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
-          <Check
-            className="h-12 w-12 text-white"
-            strokeWidth={3}
-          />
-        </div>
+      {/* Success Icon */}
+      <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-[#19B5D1]">
+        <Check
+          className="h-10 w-10 text-white"
+          strokeWidth={3}
+        />
+      </div>
 
-        {/* Everything below is grouped together */}
-        <div className="w-full text-center">
+      {/* Title */}
+      <h2 className="mb-9 text-left text-[25px] font-bold leading-[1.4] text-black">
+        Withdrawal Placed
+        <br />
+        Successfully
+      </h2>
 
-          {/* Title */}
-          <h2 className="mb-16 text-4xl font-bold leading-tight text-black sm:text-5xl">
-            Withdrawal Placed
-            <br />
-            Successfully
-          </h2>
-
-         {/* Withdrawal Message */}
-      <div className="max-w-[650px] space-y-10 text-left text-lg leading-8 text-gray-600">
+      {/* Withdrawal Message */}
+      <div className="space-y-5 text-center text-[14px] leading-6 text-gray-600">
         <p>
           Your withdrawal of{" "}
           <span className="font-bold text-black">
@@ -664,33 +660,32 @@ function Withdraw() {
         </p>
       </div>
 
-          {/* Wallet + Buttons */}
-          <div className="mt-16">
-            <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-6 py-6 text-left font-mono text-base leading-7 text-gray-700">
-              {walletAddress}
-            </div>
-
-            <button
-              type="button"
-              onClick={copyWalletAddress}
-              className="mt-6 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 text-lg font-bold text-black transition hover:bg-gray-50"
-            >
-              {copied
-                ? "Wallet Address Copied!"
-                : "Copy Wallet Address"}
-            </button>
-
-            <button
-              type="button"
-              onClick={closeDone}
-              className="mt-8 w-full rounded-full bg-[#2616D9] py-6 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
-            >
-              OK
-            </button>
-          </div>
-
+      {/* Wallet Address */}
+      <div className="mt-7">
+        <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-left font-mono text-xs leading-6 text-gray-700">
+          {walletAddress}
         </div>
+
+        <button
+          type="button"
+          onClick={copyWalletAddress}
+          className="mt-3 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-4 text-sm font-bold text-black transition hover:bg-gray-50"
+        >
+          {copied
+            ? "Wallet Address Copied!"
+            : "Copy Wallet Address"}
+        </button>
       </div>
+
+      {/* OK Button */}
+      <button
+        type="button"
+        onClick={closeDone}
+        className="mt-5 w-full rounded-full bg-[#2616D9] py-4 text-base font-bold text-white shadow-lg transition hover:opacity-90"
+      >
+        OK
+      </button>
+
     </div>
   </div>
 )}
