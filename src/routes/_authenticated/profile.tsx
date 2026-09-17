@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
       { title: "Profile — Cash Loading Portal" },
-      { name: "description", content: "Update your display name, email, country and referrer details." },
+      { name: "description", content: "Update your display name, email, phone, country and referrer details." },
       { property: "og:title", content: "Profile — Cash Loading Portal" },
       { property: "og:description", content: "Manage your account profile details." },
     ],
@@ -24,13 +24,20 @@ const labelCls = "text-sm font-bold";
 function Profile() {
   const { data: profile, isLoading } = useProfile();
   const update = useUpdateProfile();
-  const [form, setForm] = useState({ full_name: "", email: "", country: "United States", referrer: "" });
+  const [form, setForm] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    country: "United States",
+    referrer: "",
+  });
 
   useEffect(() => {
     if (profile) {
       setForm({
         full_name: profile.full_name ?? "",
         email: profile.email ?? "",
+        phone: profile.phone ?? "",
         country: profile.country ?? "United States",
         referrer: profile.referrer ?? "",
       });
@@ -82,6 +89,19 @@ function Profile() {
             className={field}
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className={labelCls} htmlFor="phone">
+            Phone number
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            className={field}
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
           />
         </div>
 
