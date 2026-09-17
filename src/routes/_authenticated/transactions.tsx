@@ -103,9 +103,6 @@ function WithdrawalDetailsModal({
 
           {withdrawal.admin_note?.trim() && (
             <div className="rounded-xl border border-border bg-card p-3">
-              <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Admin Note
-              </span>
               <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">
                 {withdrawal.admin_note}
               </p>
