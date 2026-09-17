@@ -641,7 +641,7 @@ function Withdraw() {
       </h2>
 
       {/* Withdrawal Message */}
-      <div className="max-w-[650px] space-y-6 text-left text-lg leading-8 text-gray-600">
+      <div className="max-w-[650px] space-y-6 text-center text-lg leading-8 text-gray-600">
         <p>
           Your withdrawal of{" "}
           <span className="font-bold text-black">
