@@ -572,10 +572,7 @@ function Withdraw() {
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-12">
       {/* Success Icon */}
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#19B5D1]">
-        <Check
-          className="h-10 w-10 text-white"
-          strokeWidth={3}
-        />
+        <Check className="h-10 w-10 text-white" strokeWidth={3} />
       </div>
 
       {/* Title */}
@@ -585,9 +582,8 @@ function Withdraw() {
         Successfully
       </h2>
 
-      {/* Large spacing before the box */}
-      <div className="mt-28">
-        {/* Success Box */}
+      {/* Large whitespace matching reference */}
+      <div className="mt-40">
         <div className="mx-auto w-full max-w-[330px] rounded-3xl border border-gray-200 bg-white px-5 py-6 shadow-sm">
           <div className="space-y-6 text-left text-sm leading-6 text-gray-600">
             <p>
@@ -608,12 +604,10 @@ function Withdraw() {
             </p>
           </div>
 
-          {/* Wallet Address */}
           <div className="mt-7 break-all rounded-2xl bg-gray-50 px-4 py-4 text-center font-mono text-xs leading-5 text-gray-700">
             {walletAddress}
           </div>
 
-          {/* Copy Wallet Address */}
           <button
             type="button"
             onClick={copyWalletAddress}
