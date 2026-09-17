@@ -94,19 +94,18 @@ function Withdraw() {
     setStep(1);
   };
 
-  const getMethodSummary = () => {
+    const getMethodSummary = () => {
     if (type === "cashapp") {
-      return `Cashtag: ${details.cashtag} · Name: ${details.name}`;
+      return `Cashtag: ${details.cashtag} · Name: ${details.name} · Phone: ${details.phone} · Email: ${details.email}`;
     }
     if (type === "bank") {
-      return `Bank: ${details.bankName} · Acc: ${details.accountNumber} · Routing: ${details.routingNumber}`;
+      return `Bank: ${details.bankName} · Acc: ${details.accountNumber} · Routing: ${details.routingNumber} · Phone: ${details.phone} · Email: ${details.email}`;
     }
-    return `Cardholder: ${details.cardName} · Last 4: ${details.cardLast4}`;
+    return `Cardholder: ${details.cardName} · Last 4: ${details.cardLast4} · Phone: ${details.phone} · Email: ${details.email}`;
   };
 
   return (
-    <AppShell title="Wit
-hdraw">
+        <AppShell title="Withdraw">
       <div className="max-w-2xl space-y-6">
         <div className="grid gap-3 sm:grid-cols-3">
           {[
@@ -409,9 +408,7 @@ className={labelCls}>Last 4 Digits of Card</label>
               OK
             </button>
           </div>
-        </div>
-      )}
-
+              </div>
       )}
     </AppShell>
   );
