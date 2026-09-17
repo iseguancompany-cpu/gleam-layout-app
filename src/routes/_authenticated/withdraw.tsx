@@ -669,7 +669,7 @@ function Withdraw() {
 
         <button
           type="button"
-          onClick={copyWalletAddress}
+          onClick=({copyWalletAddress})
           className="mt-6 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 text-lg font-bold text-black transition hover:bg-gray-50"
         >
           {copied
