@@ -366,8 +366,8 @@ className={labelCls}>Last 4 Digits of Card</label>
       {/* SUCCESS POPUP */}
             {/* FULL-SCREEN SUCCESS VIEW */}
       {done && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-between bg-background p-6 sm:p-10"
+                <div
+          className="fixed inset-0 z-50 flex h-screen flex-col justify-between bg-background p-6 sm:p-10"
           role="dialog"
           aria-modal="true"
         >
@@ -391,7 +391,8 @@ className={labelCls}>Last 4 Digits of Card</label>
             </h1>
 
           {/* Bottom Section (Note Div + OK Button) */}
-              <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+                       {/* Bottom Section (Note Div + OK Button) */}
+          <div className="mt-auto w-full space-y-4 pb-4">
               <p>
                 Your withdrawal of{" "}
                 <span className="font-bold text-foreground">{formatUsd(done.amount)}</span>{" "}
