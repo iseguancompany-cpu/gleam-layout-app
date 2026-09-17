@@ -126,7 +126,6 @@ function EditUserCard({
   }, [onClose]);
 
   const balance = Number(user.balance ?? 0);
-
   const totalBalance = balance + pendingBalance;
 
   const updateField = (
@@ -158,7 +157,6 @@ function EditUserCard({
           toast.success("User details updated");
           onClose();
         },
-
         onError: (error) => {
           toast.error(
             error instanceof Error
@@ -178,13 +176,12 @@ function EditUserCard({
       <form
         onClick={(event) => event.stopPropagation()}
         onSubmit={handleSubmit}
-        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-card p-5 shadow-2xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-card p-5 shadow-2xl"
       >
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">Edit User</h2>
-
             <p className="mt-1 text-sm text-muted-foreground">
               Update this user's account details
             </p>
@@ -201,9 +198,7 @@ function EditUserCard({
 
         {/* Pending Balance */}
         <div className="mb-4">
-          <label className={labelCls}>
-            Pending Balance
-          </label>
+          <label className={labelCls}>Pending Balance</label>
 
           <input
             type="text"
@@ -223,9 +218,7 @@ function EditUserCard({
 
         {/* Total Balance */}
         <div className="mb-4">
-          <label className={labelCls}>
-            Total Balance
-          </label>
+          <label className={labelCls}>Total Balance</label>
 
           <input
             type="text"
@@ -277,12 +270,9 @@ function EditUserCard({
 
         {/* Account Lock */}
         <div className="mb-4">
-          <label className={labelCls}>
-            Account Lock
-          </label>
+          <label className={labelCls}>Account Lock</label>
 
           <div className="space-y-3">
-            {/* Unlocked */}
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="radio"
@@ -293,11 +283,9 @@ function EditUserCard({
                 }
                 className="h-4 w-4 accent-blue-600"
               />
-
               <span>Unlocked</span>
             </label>
 
-            {/* Locked */}
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="radio"
@@ -308,7 +296,6 @@ function EditUserCard({
                 }
                 className="h-4 w-4 accent-blue-600"
               />
-
               <span>Locked</span>
             </label>
           </div>
@@ -316,9 +303,7 @@ function EditUserCard({
 
         {/* Lock Fee */}
         <div className="mb-4">
-          <label className={labelCls}>
-            Lock Fee
-          </label>
+          <label className={labelCls}>Lock Fee</label>
 
           <input
             type="number"
@@ -345,19 +330,9 @@ function EditUserCard({
           <input
             type="text"
             className={`${field} bg-muted`}
-            value={
-              user.id_verification_status === "verified"
-                ? "ID uploaded and verified"
-                : user.id_verification_status === "pending"
-                  ? "ID uploaded - pending verification"
-                  : "ID not uploaded"
-            }
+            value="ID not uploaded"
             readOnly
           />
-
-          <p className="mt-1 text-xs text-muted-foreground">
-            Current identification document upload status.
-          </p>
         </div>
 
         {/* Buttons */}
@@ -388,12 +363,16 @@ function AdminUsers() {
     data: users = [],
     isLoading,
     error,
+    refetch,
   } = useAdminUsers();
 
   const [search, setSearch] = useState("");
-
   const [activeUser, setActiveUser] =
     useState<UserRow | null>(null);
+
+  const [deletingUserId, setDeletingUserId] = useState<
+    string | null
+  >(null);
 
   const filteredUsers = (users as UserRow[]).filter((user) => {
     const searchValue = search.toLowerCase().trim();
@@ -407,10 +386,44 @@ function AdminUsers() {
     );
   });
 
+  const handleDeleteUser = async (user: UserRow) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${user.full_name || user.email || "this user"}?\n\nThis action cannot be undone.`,
+    );
+
+    if (!confirmed) return;
+
+    setDeletingUserId(user.id);
+
+    try {
+      const { error: deleteError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", user.id);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      toast.success("User deleted successfully");
+
+      await refetch();
+    } catch (deleteError) {
+      console.error("Delete user error:", deleteError);
+
+      toast.error(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Could not delete user",
+      );
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   return (
     <AdminShell>
       <div className="space-y-6">
-
         {/* Page Header */}
         <div>
           <h1 className="text-2xl font-bold">
@@ -455,7 +468,7 @@ function AdminUsers() {
         {!isLoading && !error && (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px] text-sm">
+              <table className="w-full min-w-[800px] text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-left">
                     <th className="px-5 py-4 font-semibold">
@@ -481,48 +494,69 @@ function AdminUsers() {
                 </thead>
 
                 <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr
-                      key={user.id}
-                      className="border-b border-border last:border-0 hover:bg-muted/20"
-                    >
-                      <td className="px-5 py-4">
-                        <div className="font-semibold">
-                          {user.full_name || "Unnamed User"}
-                        </div>
+                  {filteredUsers.map((user) => {
+                    const isDeleting =
+                      deletingUserId === user.id;
 
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          {user.id}
-                        </div>
-                      </td>
+                    return (
+                      <tr
+                        key={user.id}
+                        className="border-b border-border last:border-0 hover:bg-muted/20"
+                      >
+                        <td className="px-5 py-4">
+                          <div className="font-semibold">
+                            {user.full_name || "Unnamed User"}
+                          </div>
 
-                      <td className="px-5 py-4 text-muted-foreground">
-                        {user.email || "—"}
-                      </td>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {user.id}
+                          </div>
+                        </td>
 
-                      <td className="px-5 py-4 text-muted-foreground">
-                        {user.phone || "—"}
-                      </td>
+                        <td className="px-5 py-4 text-muted-foreground">
+                          {user.email || "—"}
+                        </td>
 
-                      <td className="px-5 py-4 font-semibold">
-                        {formatUsd(
-                          Number(user.balance ?? 0),
-                        )}
-                      </td>
+                        <td className="px-5 py-4 text-muted-foreground">
+                          {user.phone || "—"}
+                        </td>
 
-                      <td className="px-5 py-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setActiveUser(user)
-                          }
-                          className="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
-                        >
-                          Edit User
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        <td className="px-5 py-4 font-semibold">
+                          {formatUsd(
+                            Number(user.balance ?? 0),
+                          )}
+                        </td>
+
+                        <td className="px-5 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveUser(user)
+                              }
+                              disabled={isDeleting}
+                              className="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              Edit User
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteUser(user)
+                              }
+                              disabled={isDeleting}
+                              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {isDeleting
+                                ? "Deleting..."
+                                : "Delete User"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
 
                   {filteredUsers.length === 0 && (
                     <tr>
