@@ -393,7 +393,7 @@ className={labelCls}>Last 4 Digits of Card</label>
 
           {/* Bottom Section */}
           <div className="w-full space-y-4 pb-4">
-            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm text-center">
               <p>
                 Your withdrawal of{" "}
                 <span className="font-bold text-foreground">
