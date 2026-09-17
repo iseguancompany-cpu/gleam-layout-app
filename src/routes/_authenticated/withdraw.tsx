@@ -363,10 +363,10 @@ className={labelCls}>Last 4 Digits of Card</label>
         )}
       </div>
 
-      {/* SUCCESS POPUP */}
-            {/* FULL-SCREEN SUCCESS VIEW */}
+           {/* SUCCESS POPUP */}
+      {/* FULL-SCREEN SUCCESS VIEW */}
       {done && (
-                      <div
+        <div
           className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
           role="dialog"
           aria-modal="true"
@@ -385,14 +385,15 @@ className={labelCls}>Last 4 Digits of Card</label>
               </svg>
             </div>
 
-            {/* Title & Amount */}
-                       <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
+            {/* Title */}
+            <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
               Withdrawal Placed Successfully
             </h1>
+          </div>
 
-        
-                   {/* Bottom Section (Note Div + OK Button) */}
+          {/* Bottom Section (Note Div + OK Button) */}
           <div className="w-full space-y-4 pb-4">
+            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
               <p>
                 Your withdrawal of{" "}
                 <span className="font-bold text-foreground">{formatUsd(done.amount)}</span>{" "}
@@ -408,7 +409,7 @@ className={labelCls}>Last 4 Digits of Card</label>
               OK
             </button>
           </div>
-              </div>
+        </div>
       )}
     </AppShell>
   );
