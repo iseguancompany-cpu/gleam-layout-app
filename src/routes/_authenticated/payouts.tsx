@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatUsd, useRecentPayouts } from "@/lib/api";
+import { formatUsd, useWithdrawals } from "@/lib/api";
+
 
 export const Route = createFileRoute("/_authenticated/payouts")({
   head: () => ({
@@ -35,7 +36,8 @@ function Payouts() {
   // useRecentPayouts should query the public_recent_payouts view (cashtag,
   // amount, status, created_at only — no names/phone/email/address) and
   // poll every 5 minutes via refetchInterval.
-  const { data: payouts = [], isLoading } = useRecentPayouts();
+ const { data: payouts = [], isLoading } = useWithdrawals();
+
 
   return (
     <AppShell title="Recent Payouts">
