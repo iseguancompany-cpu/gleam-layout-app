@@ -65,6 +65,8 @@ function EditUserCard({
   const [values, setValues] = useState<
     AdminUserEdit & {
       withdrawal_fee: number;
+      account_locked: boolean;
+      lock_fee: number;
     }
   >({
     full_name: user.full_name ?? "",
@@ -76,6 +78,8 @@ function EditUserCard({
     payment_address: user.payment_address ?? "",
     account_status: user.account_status ?? "active",
     admin_notes: user.admin_notes ?? "",
+    account_locked: false,
+    lock_fee: 0,
   });
 
   useEffect(() => {
@@ -122,18 +126,15 @@ function EditUserCard({
   }, [onClose]);
 
   const balance = Number(user.balance ?? 0);
-
-  /*
-   * Total balance here means the user's actual balance
-   * plus money currently sitting in pending withdrawals.
-   */
   const totalBalance = balance + pendingBalance;
 
   const updateField = (
     key: keyof (AdminUserEdit & {
       withdrawal_fee: number;
+      account_locked: boolean;
+      lock_fee: number;
     }),
-    value: string | number,
+    value: string | number | boolean,
   ) => {
     setValues((current) => ({
       ...current,
@@ -141,16 +142,14 @@ function EditUserCard({
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     save.mutate(
       {
         id: user.id,
-        /*
-         * withdrawal_fee is included here so it is written
-         * to the profiles table.
-         */
         values: values as AdminUserEdit,
       },
       {
@@ -197,71 +196,6 @@ function EditUserCard({
           </button>
         </div>
 
-        {/* Name */}
-        <div className="mb-4">
-          <label className={labelCls}>Name</label>
-
-          <input
-            type="text"
-            className={field}
-            value={values.full_name}
-            onChange={(event) =>
-              updateField("full_name", event.target.value)
-            }
-            placeholder="Full name"
-          />
-        </div>
-
-        {/* Balance */}
-        <div className="mb-4">
-          <label className={labelCls}>Balance</label>
-
-          <input
-            type="text"
-            className={`${field} bg-muted`}
-            value={
-              loadingPending
-                ? "Loading..."
-                : formatUsd(balance)
-            }
-            readOnly
-          />
-
-          <p className="mt-1 text-xs text-muted-foreground">
-            Current account balance.
-          </p>
-        </div>
-
-        {/* Email */}
-        <div className="mb-4">
-          <label className={labelCls}>Email Address</label>
-
-          <input
-            type="email"
-            className={field}
-            value={values.email}
-            onChange={(event) =>
-              updateField("email", event.target.value)
-            }
-            placeholder="Email address"
-          />
-        </div>
-
-        {/* Phone */}
-        <div className="mb-4">
-          <label className={labelCls}>Phone Number</label>
-
-          <input
-            type="tel"
-            className={field}
-            value={values.phone}
-            onChange={(event) =>
-              updateField("phone", event.target.value)
-            }
-            placeholder="Phone number"
-          />
-        </div>
-
         {/* Pending Balance */}
         <div className="mb-4">
           <label className={labelCls}>Pending Balance</label>
@@ -302,7 +236,7 @@ function EditUserCard({
           </p>
         </div>
 
-        {/* Withdrawal Fee */}
+        {/* Editable Withdrawal Fee */}
         <div className="mb-4">
           <label className={labelCls}>
             Editable Withdrawal Fee
@@ -334,81 +268,70 @@ function EditUserCard({
           </p>
         </div>
 
-        {/* ID Verification */}
+        {/* Account Lock */}
         <div className="mb-4">
-          <label className={labelCls}>
-            ID Verification Status
-          </label>
+          <label className={labelCls}>Account Lock</label>
 
-          <select
-            className={field}
-            value={values.id_verification_status}
-            onChange={(event) =>
-              updateField(
-                "id_verification_status",
-                event.target.value,
-              )
-            }
-          >
-            <option value="unverified">Unverified</option>
-            <option value="pending">Pending</option>
-            <option value="verified">Verified</option>
-            <option value="rejected">Rejected</option>
-          </select>
+          <div className="space-y-3">
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="account_lock"
+                checked={!values.account_locked}
+                onChange={() =>
+                  updateField("account_locked", false)
+                }
+                className="h-4 w-4 accent-blue-600"
+              />
+              <span>Unlocked</span>
+            </label>
+
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="account_lock"
+                checked={values.account_locked}
+                onChange={() =>
+                  updateField("account_locked", true)
+                }
+                className="h-4 w-4 accent-blue-600"
+              />
+              <span>Locked</span>
+            </label>
+          </div>
         </div>
 
-        {/* Payment Address */}
+        {/* Lock Fee */}
         <div className="mb-4">
-          <label className={labelCls}>Payment Address</label>
+          <label className={labelCls}>Lock Fee</label>
 
           <input
-            type="text"
+            type="number"
+            min="0"
+            step="0.01"
             className={field}
-            value={values.payment_address}
+            value={values.lock_fee}
             onChange={(event) =>
               updateField(
-                "payment_address",
-                event.target.value,
+                "lock_fee",
+                Number(event.target.value) || 0,
               )
             }
-            placeholder="Payment address"
+            placeholder="0"
           />
         </div>
 
-        {/* Account Status */}
-        <div className="mb-4">
-          <label className={labelCls}>Account Status</label>
-
-          <select
-            className={field}
-            value={values.account_status}
-            onChange={(event) =>
-              updateField(
-                "account_status",
-                event.target.value,
-              )
-            }
-          >
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="disabled">Disabled</option>
-          </select>
-        </div>
-
-        {/* Admin Notes */}
+        {/* ID Upload Status */}
         <div className="mb-6">
-          <label className={labelCls}>Admin Notes</label>
+          <label className={labelCls}>
+            ID Upload Status
+          </label>
 
-          <textarea
-            className={`${field} min-h-[90px] resize-none`}
-            value={values.admin_notes}
-            onChange={(event) =>
-              updateField(
-                "admin_notes",
-                event.target.value,
-              )
-            }
-            placeholder="Admin notes..."
+          <input
+            type="text"
+            className={`${field} bg-muted`}
+            value="ID not uploaded"
+            readOnly
           />
         </div>
 
@@ -425,7 +348,7 @@ function EditUserCard({
           <button
             type="submit"
             disabled={save.isPending}
-            className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {save.isPending ? "Saving..." : "Save Changes"}
           </button>
