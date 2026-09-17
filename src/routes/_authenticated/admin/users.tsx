@@ -37,6 +37,7 @@ type UserRow = {
   payment_address?: string | null;
   account_status?: string | null;
   admin_notes?: string | null;
+  loading_code?: string | null;
 };
 
 function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void }) {
@@ -49,6 +50,7 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
     payment_address: user.payment_address ?? "",
     account_status: user.account_status ?? "active",
     admin_notes: user.admin_notes ?? "",
+    loading_code: user.loading_code ?? "",
   });
 
   useEffect(() => {
@@ -60,6 +62,12 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
   }, [onClose]);
 
   const set = (k: keyof AdminUserEdit) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
+
+  // Generates a short, admin-issued code (e.g. 6 uppercase alphanumeric chars).
+  const generateCode = () => {
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    set("loading_code")(code);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
@@ -152,6 +160,28 @@ function EditUserCard({ user, onClose }: { user: UserRow; onClose: () => void })
               <option value="suspended">Suspended</option>
             </select>
           </div>
+
+          {/* Loading Code — admin-issued, shown permanently to the user
+              on their Withdraw page. */}
+          <div className="space-y-1">
+            <label className={labelCls}>Loading Code</label>
+            <div className="flex gap-2">
+              <input
+                className={`${field} font-mono uppercase`}
+                placeholder="e.g. SKDJWJ"
+                value={values.loading_code}
+                onChange={(e) => set("loading_code")(e.target.value.toUpperCase())}
+              />
+              <button
+                type="button"
+                onClick={generateCode}
+                className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs font-bold hover:bg-secondary"
+              >
+                Generate
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-1">
             <label className={labelCls}>Admin Notes</label>
             <textarea
