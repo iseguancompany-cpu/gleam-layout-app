@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/lib/auth";
 
@@ -254,24 +253,6 @@ export function useActivity() {
 
 /* ---------------- Account Summary ---------------- */
 
-/**
- * Account overview.
- *
- * Balance:
- * The actual balance stored on the user's profile.
- *
- * Pending:
- * Total amount currently sitting in pending withdrawals.
- *
- * Paid out:
- * Total approved/completed withdrawal amount.
- *
- * Available:
- * Current balance minus pending withdrawals.
- *
- * Withdrawal fee:
- * Fee assigned to this specific user by admin.
- */
 export function useAccountSummary() {
   const { data: profile } = useProfile();
   const { data: withdrawals = [] } = useWithdrawals();
@@ -358,24 +339,13 @@ export type AdminUserEdit = {
   full_name: string;
   phone: string;
   email: string;
-
-  /*
-   * User-specific withdrawal fee.
-   */
   withdrawal_fee: number;
-
   id_verification_status: string;
   payment_address: string;
   account_status: string;
   admin_notes: string;
 };
 
-/**
- * Admin edits a user's profile.
- *
- * The withdrawal_fee is saved directly on the user's
- * profiles row so the user side can read the same value.
- */
 export function useAdminUpdateUser() {
   const qc = useQueryClient();
 
@@ -417,10 +387,6 @@ export function useAdminUpdateUser() {
         queryKey: ["profile"],
       });
 
-      /*
-       * Refresh any withdrawal/account information
-       * that may be displayed on the user side.
-       */
       qc.invalidateQueries({
         queryKey: ["withdrawals"],
       });
@@ -544,12 +510,6 @@ function invalidateAdmin(
 
 /* ---------------- Withdrawal Status ---------------- */
 
-/**
- * Approve, reject, or complete a withdrawal request.
- *
- * The database RPC remains responsible for the actual
- * withdrawal status/accounting operation.
- */
 export function useUpdateWithdrawalStatus() {
   const qc = useQueryClient();
 
@@ -583,9 +543,6 @@ export function useUpdateWithdrawalStatus() {
 
 /* ---------------- Cash Loading ---------------- */
 
-/**
- * Admin adds a cash-load amount to a user's balance.
- */
 export function useLoadCash() {
   const qc = useQueryClient();
 
