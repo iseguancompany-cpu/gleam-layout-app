@@ -62,7 +62,8 @@ function Payouts() {
               {payouts.map((p) => (
                 <tr key={p.id}>
                   <td className="px-4 py-3 font-semibold">
-                    {p.cashtag ?? "—"}
+                    {p.method_summary ?? "—"}
+
                   </td>
                   <td className="px-4 py-3 font-bold">{formatUsd(Number(p.amount))}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
