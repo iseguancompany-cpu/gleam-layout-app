@@ -608,13 +608,13 @@ function Withdraw() {
             {walletAddress}
           </div>
 
-          <button
-            type="button"
-            onClick={copyWalletAddress}
-            className="mt-5 flex h-14 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white text-sm font-bold text-black transition hover:bg-gray-50"
-          >
-            {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
-          </button>
+         <button
+  type="button"
+  onClick={copyWalletAddress}
+  className="mt-5 flex h-14 w-full items-center justify-center rounded-full border border-gray-200 bg-white text-sm font-bold text-black transition hover:bg-gray-50"
+>
+  ( Copy Wallet Address )
+</button>
         </div>
       </div>
 
