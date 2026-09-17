@@ -503,30 +503,31 @@ function AdminUsers() {
                         key={user.id}
                         className="border-b border-border last:border-0 hover:bg-muted/20"
                       >
+                        {/* Name */}
                         <td className="px-5 py-4">
                           <div className="font-semibold">
                             {user.full_name || "Unnamed User"}
                           </div>
-
-                          <div className="mt-1 text-xs text-muted-foreground">
-                            {user.id}
-                          </div>
                         </td>
 
+                        {/* Email */}
                         <td className="px-5 py-4 text-muted-foreground">
                           {user.email || "—"}
                         </td>
 
+                        {/* Phone */}
                         <td className="px-5 py-4 text-muted-foreground">
                           {user.phone || "—"}
                         </td>
 
+                        {/* Balance */}
                         <td className="px-5 py-4 font-semibold">
                           {formatUsd(
                             Number(user.balance ?? 0),
                           )}
                         </td>
 
+                        {/* Actions */}
                         <td className="px-5 py-4 text-right">
                           <div className="flex justify-end gap-2">
                             <button
