@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CircleAlert } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -37,8 +37,12 @@ type Details = {
   name: string;
   phone: string;
   email: string;
-  address: string;
-  loadingCode: string;
+  cashtag: string;
+  bankName: string;
+  accountNumber: string;
+  routingNumber: string;
+  cardName: string;
+  cardLast4: string;
 };
 
 function Withdraw() {
@@ -53,15 +57,16 @@ function Withdraw() {
     name: "",
     phone: "",
     email: "",
-    address: "",
-    loadingCode: "",
+    cashtag: "",
+    bankName: "",
+    accountNumber: "",
+    routingNumber: "",
+    cardName: "",
+    cardLast4: "",
   });
   const [done, setDone] = useState<{
     amount: number;
-    summary: string;
     id: string;
-    status: string;
-    createdAt: string;
   } | null>(null);
 
   const numericAmount = Number(amount) || 0;
@@ -75,12 +80,33 @@ function Withdraw() {
     setDone(null);
     setAmount("");
     setType(null);
-    setDetails({ name: "", phone: "", email: "", address: "", loadingCode: "" });
+    setDetails({
+      name: "",
+      phone: "",
+      email: "",
+      cashtag: "",
+      bankName: "",
+      accountNumber: "",
+      routingNumber: "",
+      cardName: "",
+      cardLast4: "",
+    });
     setStep(1);
   };
 
+  const getMethodSummary = () => {
+    if (type === "cashapp") {
+      return `Cashtag: ${details.cashtag} · Name: ${details.name}`;
+    }
+    if (type === "bank") {
+      return `Bank: ${details.bankName} · Acc: ${details.accountNumber} · Routing: ${details.routingNumber}`;
+    }
+    return `Cardholder: ${details.cardName} · Last 4: ${details.cardLast4}`;
+  };
+
   return (
-    <AppShell title="Withdraw">
+    <AppShell title="Wit
+hdraw">
       <div className="max-w-2xl space-y-6">
         <div className="grid gap-3 sm:grid-cols-3">
           {[
@@ -138,31 +164,32 @@ function Withdraw() {
             </div>
 
             <div className="space-y-2">
-              <label className={labelCls} htmlFor="amount">
-                Amount to withdraw
+              <label className={labelCls} htmlFor="withdraw-amount">
+                Amount (USD)
               </label>
               <input
-                id="amount"
+                id="withdraw-amount"
                 type="number"
-                min={min || 1}
                 step="0.01"
-                required
+                min={min}
+                max={available}
                 placeholder="0.00"
+                required
+                className={field}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className={field}
               />
               <p className="text-xs text-muted-foreground">
-                Available: {formatUsd(available)} · No fees are charged on withdrawals.
+                Available: {formatUsd(available)} · Minimum: {formatUsd(min)}
               </p>
             </div>
 
             <button
               type="submit"
-              disabled={!type || !amount || !withdrawalsEnabled}
-              className="w-full rounded-xl bg-navy px-6 py-3 font-bold text-navy-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+              disabled={!withdrawalsEnabled}
+              className="w-full rounded-2xl bg-primary py-4 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              {withdrawalsEnabled ? "Continue" : "Withdrawals are paused"}
+              Continue
             </button>
           </form>
         )}
@@ -172,144 +199,202 @@ function Withdraw() {
             className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
-              const summaryParts = [
-                `${payoutLabels[type]}`,
-                details.name && `Name: ${details.name}`,
-                details.phone && `Phone: ${details.phone}`,
-                details.email && `Email: ${details.email}`,
-                details.address && `Address: ${details.address}`,
-                details.loadingCode && `Loading Code: ${details.loadingCode}`,
-              ]
-                .filter(Boolean)
-                .join(" · ");
-
               create.mutate(
                 {
                   amount: numericAmount,
                   method_type: type,
-                  method_summary: summaryParts,
-                  payout_method_id: null,
+                  method_summary: getMethodSummary(),
                 },
                 {
-                  onSuccess: (row) =>
+                  onSuccess: (row) => {
                     setDone({
-                      amount: Number(row.amount),
-                      summary: row.method_summary || summaryParts,
+                      amount: numericAmount,
                       id: row.id,
-                      status: row.status,
-                      createdAt: row.created_at,
-                    }),
+                    });
+                  },
                   onError: (err) =>
-                    toast.error(err instanceof Error ? err.message : "Could not place withdrawal"),
+                    toast.error(
+                      err instanceof Error ? err.message : "Could not place withdrawal",
+                    ),
                 },
               );
             }}
           >
+            {/* CASH APP FIELDS */}
+            {type === "cashapp" && (
+              <>
+                <div className="space-y-2">
+                  <label className={labelCls}>Cashtag</label>
+                  <input
+                    required
+                    placeholder="$cashtag"
+                    className={field}
+                    value={details.cashtag}
+                    onChange={setDetail("cashtag")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelCls}>Recipient Name</label>
+                  <input
+                    required
+                    placeholder="Full Name"
+                    className={field}
+                    value={details.name}
+                    onChange={setDetail("name")}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* BANK TRANSFER FIELDS */}
+            {type === "bank" && (
+              <>
+                <div className="space-y-2">
+                  <label className={labelCls}>Bank Name</label>
+                  <input
+                    required
+                    placeholder="Chase, Bank of America, etc."
+                    className={field}
+                    value={details.bankName}
+                    onChange={setDetail("bankName")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelCls}>Account Holder Name</label>
+                  <input
+                    required
+                    placeholder="Full Legal Name"
+                    className={field}
+                    value={details.name}
+                    onChange={setDetail("name")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelCls}>Routing Number</label>
+                  <input
+                    required
+                    placeholder="9-digit Routing Number"
+                    className={field}
+                    value={details.routingNumber}
+                    onChange={setDetail("routingNumber")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelCls}>Account Number</label>
+                  <input
+                    required
+                    placeholder="Account Number"
+                    className={field}
+                    value={details.accountNumber}
+                    onChange={setDetail("accountNumber")}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* CARD FIELDS */}
+            {type === "card" && (
+              <>
+                <div className="space-y-2">
+                  <label className={labelCls}>Cardholder Name</label>
+                  <input
+                    required
+                    placeholder="Name as it appears on card"
+                    className={field}
+                    value={details.cardName}
+                    onChange={setDetail("cardName")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+className={labelCls}>Last 4 Digits of Card</label>
+                  <input
+                    required
+                    maxLength={4}
+                    placeholder="1234"
+                    className={field}
+                    value={details.cardLast4}
+                    onChange={setDetail("cardLast4")}
+                  />
+                </div>
+              </>
+            )}
+
             <div className="space-y-2">
-              <label className={labelCls}>Full name</label>
-              <input required className={field} value={details.name} onChange={setDetail("name")} />
-            </div>
-            <div className="space-y-2">
-              <label className={labelCls}>Phone number</label>
+              <label className={labelCls}>Phone Number</label>
               <input
-                required
                 type="tel"
+                required
+                placeholder="Phone number"
                 className={field}
                 value={details.phone}
                 onChange={setDetail("phone")}
               />
             </div>
+
             <div className="space-y-2">
-              <label className={labelCls}>Email address</label>
+              <label className={labelCls}>Email</label>
               <input
-                required
                 type="email"
+                required
+                placeholder="Email address"
                 className={field}
                 value={details.email}
                 onChange={setDetail("email")}
               />
             </div>
-            <div className="space-y-2">
-              <label className={labelCls}>Address</label>
-              <input required className={field} value={details.address} onChange={setDetail("address")} />
-            </div>
-            <div className="space-y-2">
-              <label className={labelCls}>Loading Code</label>
-              <input
-                required
-                className={field}
-                value={details.loadingCode}
-                onChange={setDetail("loadingCode")}
-              />
-            </div>
 
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="submit"
-                disabled={create.isPending}
-                className="rounded-xl bg-navy px-6 py-3 text-sm font-bold text-navy-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-              >
-                {create.isPending ? "Submitting…" : "Continue"}
-              </button>
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="rounded-xl bg-secondary px-6 py-3 text-sm font-bold transition-colors hover:bg-accent"
+                className="w-1/3 rounded-2xl border border-border py-4 font-bold transition-colors hover:bg-accent"
               >
                 Back
+              </button>
+              <button
+                type="submit"
+                disabled={create.isPending}
+                className="w-2/3 rounded-2xl bg-primary py-4 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {create.isPending ? "Submitting…" : "Confirm Withdrawal"}
               </button>
             </div>
           </form>
         )}
       </div>
 
+      {/* SUCCESS POPUP */}
       {done && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={closeDone}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
         >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Withdrawal Pending"
-            className="w-full max-w-md rounded-2xl bg-card p-6 text-center shadow-2xl sm:p-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-center">
-              <CircleAlert className="h-16 w-16 text-amber-500" strokeWidth={1.5} />
+          <div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-2xl text-center">
+            {/* Green Success Icon */}
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-emerald-500 bg-emerald-50 text-emerald-500">
+              <CircleCheck className="h-9 w-9 text-emerald-600" />
             </div>
-            <h2 className="mt-4 text-2xl font-extrabold text-foreground">Withdrawal Pending</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Waiting for your {formatUsd(done.amount)} withdrawal to process.
+
+            {/* Popup Title */}
+            <h2 className="mt-4 text-2xl font-extrabold text-foreground">
+              Withdrawal Placed Successfully
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your withdrawal of {formatUsd(done.amount)} has been submitted.
             </p>
 
-            <dl className="mt-5 space-y-2 rounded-xl border border-border p-4 text-left text-sm">
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Request ID</dt>
-                <dd className="font-mono text-xs font-bold">{done.id}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Status</dt>
-                <dd className="font-bold capitalize">{done.status}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Submitted</dt>
-                <dd className="text-xs text-muted-foreground">
-                  {new Date(done.createdAt).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </dd>
-              </div>
-            </dl>
+            {/* Custom Note Section above the OK button */}
+            <div className="mt-5 rounded-2xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+              {/* Note placeholder: tell me what text or elements to place here */}
+              <p>Check your email for confirmation.</p>
+            </div>
 
             <button
               type="button"
               onClick={closeDone}
-              className="mt-6 rounded-xl bg-primary px-10 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+              className="mt-6 w-full rounded-2xl bg-primary py-3.5 font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
               OK
             </button>
