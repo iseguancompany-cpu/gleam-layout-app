@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
@@ -22,15 +21,6 @@ export const Route = createFileRoute("/_authenticated/transactions")({
   }),
   component: Transactions,
 });
-
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-border/60 py-3 last:border-b-0">
-      <dt className="text-sm font-semibold text-muted-foreground">{label}</dt>
-      <dd className="text-right text-sm font-semibold">{children}</dd>
-    </div>
-  );
-}
 
 function WithdrawalDetailsModal({
   withdrawal,
@@ -84,12 +74,11 @@ function WithdrawalDetailsModal({
             </span>
           </div>
 
-          {/* Payment method + cashtag/handle, shown alongside the existing
-              details without adding a new column anywhere in the table. */}
           <div className="flex justify-between gap-2">
             <span className="font-semibold text-muted-foreground">Payment Method</span>
             <span className="text-right text-foreground">
-              {payoutLabels[withdrawal.method_type] ?? withdrawal.method_type}
+              {payoutLabels[withdrawal.method_type]
+?? withdrawal.method_type}
               {withdrawal.method_summary ? ` · ${withdrawal.method_summary}` : ""}
             </span>
           </div>
@@ -112,24 +101,22 @@ function WithdrawalDetailsModal({
             </span>
           </div>
 
-          {/* Admin Note / Reason */}
           {withdrawal.admin_note?.trim() && (
-            <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
-              <span className="block text-xs font-bold uppercase tracking-wider text-primary">
+            <div className="rounded-xl border border-border bg-card p-3">
+              <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Admin Note
               </span>
-              <p className="mt-1 text-xs sm:text-sm text-foreground">
+              <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">
                 {withdrawal.admin_note}
               </p>
             </div>
           )}
         </div>
 
-        {/* Action Button */}
         <button
           type="button"
           onClick={onClose}
-          className="mt-6 w-full max-w-[140px] rounded-xl bg-navy px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          className="mt-6 w-full rounded-2xl bg-foreground py-3 font-bold text-background transition hover:opacity-90 cursor-pointer"
         >
           OK
         </button>
@@ -143,21 +130,19 @@ function Transactions() {
   const { data: withdrawals = [], isLoading } = useWithdrawals();
   const [selected, setSelected] = useState<WithdrawalRow | null>(null);
 
-  const name = profile?.full_name?.trim() || profile?.email || "My account";
+  const name = profile?.full_name || "Account";
   const count = withdrawals.length;
 
   return (
-    <AppShell title="Transactions">
-      <div className="rounded-2xl bg-card p-5 shadow-card sm:p-7">
-        <h2 className="text-2xl font-extrabold tracking-tight">Transactions</h2>
+    <AppShell>
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <h1 className="text-2xl font-extrabold sm:text-3xl">Transactions</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {count} withdrawal {count === 1 ? "request" : "requests"}
+          {count} {count === 1 ? "withdrawal request" : "withdrawal requests"}
         </p>
-      </div>
 
-      <div className="mt-4 rounded-2xl bg-card p-5 shadow-card sm:p-7">
-        {/* Desktop table */}
-        <div className="hidden overflow-x-auto sm:block">
+        {/* Horizontal table on all screen sizes */}
+        <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
@@ -178,10 +163,9 @@ function Transactions() {
                   <td className="py-4 pr-3 font-bold">{formatUsd(Number(w.amount))}</td>
                   <td className="py-4 pr-3">
                     <button
-                      type="button"
+  type="button"
                       onClick={() => setSelected(w)}
-                      className="inline-flex"
-                      aria-label={`View details for ${w.status} withdrawal`}
+                      className="cursor-pointer transition hover:opacity-80"
                     >
                       <StatusBadge status={w.status} />
                     </button>
@@ -189,12 +173,11 @@ function Transactions() {
                   <td className="py-4 text-xs text-muted-foreground whitespace-nowrap">
                     {new Date(w.created_at).toLocaleString("en-US", {
                       month: "short",
-                      day: "2-digit",
+                      day: "numeric",
                       year: "numeric",
                       hour: "numeric",
                       minute: "2-digit",
                     })}
-                    {w.method_summary ? ` (${w.method_summary})` : ""}
                   </td>
                 </tr>
               ))}
@@ -202,46 +185,8 @@ function Transactions() {
           </table>
         </div>
 
-        {/* Mobile stacked cards */}
-        <div className="space-y-3 sm:hidden">
-          {withdrawals.map((w) => (
-            <div
-              key={w.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border p-4"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {payoutLabels[w.method_type] ?? w.method_type}
-                </p>
-                <p className="mt-1 text-sm font-bold">{formatUsd(Number(w.amount))}</p>
-              </div>
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => setSelected(w)}
-                  className="inline-flex"
-                  aria-label={`View details for ${w.status} withdrawal`}
-                >
-                  <StatusBadge status={w.status} />
-                </button>
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(w.created_at).toLocaleString("en-US", {
-                    month: "short",
-                    day: "2-digit",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                  {w.method_summary ? ` (${w.method_summary})` : ""}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
         {withdrawals.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-muted-foreground">
             {isLoading ? "Loading…" : "No requests yet."}
           </p>
         )}
