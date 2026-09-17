@@ -216,9 +216,9 @@ function EditUserCard({
           </p>
         </div>
 
-        {/* Total Balance */}
+        {/* Total Deposits */}
         <div className="mb-4">
-          <label className={labelCls}>Total Balance</label>
+          <label className={labelCls}>Total Deposits</label>
 
           <input
             type="text"
@@ -232,7 +232,7 @@ function EditUserCard({
           />
 
           <p className="mt-1 text-xs text-muted-foreground">
-            Balance plus pending withdrawals.
+            Total deposits made by this user.
           </p>
         </div>
 
