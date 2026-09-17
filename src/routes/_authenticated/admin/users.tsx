@@ -126,6 +126,7 @@ function EditUserCard({
   }, [onClose]);
 
   const balance = Number(user.balance ?? 0);
+
   const totalBalance = balance + pendingBalance;
 
   const updateField = (
@@ -157,6 +158,7 @@ function EditUserCard({
           toast.success("User details updated");
           onClose();
         },
+
         onError: (error) => {
           toast.error(
             error instanceof Error
@@ -182,6 +184,7 @@ function EditUserCard({
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">Edit User</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">
               Update this user's account details
             </p>
@@ -198,7 +201,9 @@ function EditUserCard({
 
         {/* Pending Balance */}
         <div className="mb-4">
-          <label className={labelCls}>Pending Balance</label>
+          <label className={labelCls}>
+            Pending Balance
+          </label>
 
           <input
             type="text"
@@ -218,7 +223,9 @@ function EditUserCard({
 
         {/* Total Balance */}
         <div className="mb-4">
-          <label className={labelCls}>Total Balance</label>
+          <label className={labelCls}>
+            Total Balance
+          </label>
 
           <input
             type="text"
@@ -270,9 +277,12 @@ function EditUserCard({
 
         {/* Account Lock */}
         <div className="mb-4">
-          <label className={labelCls}>Account Lock</label>
+          <label className={labelCls}>
+            Account Lock
+          </label>
 
           <div className="space-y-3">
+            {/* Unlocked */}
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="radio"
@@ -283,9 +293,11 @@ function EditUserCard({
                 }
                 className="h-4 w-4 accent-blue-600"
               />
+
               <span>Unlocked</span>
             </label>
 
+            {/* Locked */}
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="radio"
@@ -296,6 +308,7 @@ function EditUserCard({
                 }
                 className="h-4 w-4 accent-blue-600"
               />
+
               <span>Locked</span>
             </label>
           </div>
@@ -303,7 +316,9 @@ function EditUserCard({
 
         {/* Lock Fee */}
         <div className="mb-4">
-          <label className={labelCls}>Lock Fee</label>
+          <label className={labelCls}>
+            Lock Fee
+          </label>
 
           <input
             type="number"
@@ -330,9 +345,19 @@ function EditUserCard({
           <input
             type="text"
             className={`${field} bg-muted`}
-            value="ID not uploaded"
+            value={
+              user.id_verification_status === "verified"
+                ? "ID uploaded and verified"
+                : user.id_verification_status === "pending"
+                  ? "ID uploaded - pending verification"
+                  : "ID not uploaded"
+            }
             readOnly
           />
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            Current identification document upload status.
+          </p>
         </div>
 
         {/* Buttons */}
@@ -366,6 +391,7 @@ function AdminUsers() {
   } = useAdminUsers();
 
   const [search, setSearch] = useState("");
+
   const [activeUser, setActiveUser] =
     useState<UserRow | null>(null);
 
@@ -384,6 +410,7 @@ function AdminUsers() {
   return (
     <AdminShell>
       <div className="space-y-6">
+
         {/* Page Header */}
         <div>
           <h1 className="text-2xl font-bold">
