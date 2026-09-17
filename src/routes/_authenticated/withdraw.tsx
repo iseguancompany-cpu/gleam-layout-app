@@ -567,66 +567,74 @@ function Withdraw() {
       )}
 
       {/* SUCCESS POPUP */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-[100] min-h-screen w-full overflow-y-auto bg-white">
-          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-10">
-            <div className="mb-8 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
-              <Check
-                className="h-10 w-10 text-white"
-                strokeWidth={3}
-              />
-            </div>
+{showSuccessModal && (
+  <div className="fixed inset-0 z-[100] min-h-screen w-full overflow-y-auto bg-white">
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-12">
+      {/* Success Icon */}
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#19B5D1]">
+        <Check
+          className="h-10 w-10 text-white"
+          strokeWidth={3}
+        />
+      </div>
 
-            <h2 className="mb-10 text-left text-3xl font-extrabold leading-tight tracking-tight text-black">
-              Withdrawal Placed
-              <br />
-              Successfully
-            </h2>
+      {/* Title */}
+      <h2 className="mt-10 text-left text-3xl font-extrabold leading-tight tracking-tight text-black">
+        Withdrawal Placed
+        <br />
+        Successfully
+      </h2>
 
-            {/* SMALL SUCCESS BOX */}
-            <div className="mx-auto w-full max-w-[280px] rounded-2xl border border-gray-200 bg-white px-4 py-5 shadow-sm">
-              <div className="space-y-3 text-center text-xs leading-5 text-gray-600">
-                <p>
-                  Your withdrawal of{" "}
-                  <span className="font-bold text-black">
-                    ${withdrawalAmount.toFixed(2)}
-                  </span>{" "}
-                  has been placed successfully.
-                </p>
+      {/* Large spacing before the box */}
+      <div className="mt-28">
+        {/* Success Box */}
+        <div className="mx-auto w-full max-w-[330px] rounded-3xl border border-gray-200 bg-white px-5 py-6 shadow-sm">
+          <div className="space-y-6 text-left text-sm leading-6 text-gray-600">
+            <p>
+              Your withdrawal of{" "}
+              <span className="font-bold text-black">
+                ${withdrawalAmount.toFixed(2)}
+              </span>{" "}
+              has been placed successfully.
+            </p>
 
-                <p>
-                  Pay exactly{" "}
-                  <span className="font-bold text-black">
-                    {formatUsd(withdrawalFee)}
-                  </span>{" "}
-                  withdrawal charge to the wallet address below and refresh
-                  your Cash App for the deposit.
-                </p>
-              </div>
-
-              <div className="mt-5 break-all rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-center font-mono text-[10px] leading-4 text-gray-700">
-                {walletAddress}
-              </div>
-
-              <button
-                type="button"
-                onClick={copyWalletAddress}
-                className="mt-4 flex h-10 w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-black transition hover:bg-gray-50"
-              >
-                {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={closeDone}
-              className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
-            >
-              OK
-            </button>
+            <p>
+              Pay exactly{" "}
+              <span className="font-bold text-black">
+                {formatUsd(withdrawalFee)}
+              </span>{" "}
+              withdrawal charge to the wallet address below and refresh your
+              Cash App for the deposit.
+            </p>
           </div>
+
+          {/* Wallet Address */}
+          <div className="mt-7 break-all rounded-2xl bg-gray-50 px-4 py-4 text-center font-mono text-xs leading-5 text-gray-700">
+            {walletAddress}
+          </div>
+
+          {/* Copy Wallet Address */}
+          <button
+            type="button"
+            onClick={copyWalletAddress}
+            className="mt-5 flex h-14 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white text-sm font-bold text-black transition hover:bg-gray-50"
+          >
+            {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
+          </button>
         </div>
-      )}
+      </div>
+
+      {/* OK Button */}
+      <button
+        type="button"
+        onClick={closeDone}
+        className="mx-auto mt-7 flex h-14 w-full max-w-[330px] items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
     </AppShell>
   );
 }
