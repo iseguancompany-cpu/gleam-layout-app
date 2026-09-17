@@ -58,12 +58,8 @@ type Details = {
 function Withdraw() {
   const { data: settings } = useSettings();
 
-  const {
-    available,
-    balance,
-    pending,
-    withdrawalFee,
-  } = useAccountSummary();
+  const { available, balance, pending, withdrawalFee } =
+    useAccountSummary();
 
   const { data: withdrawals = [] } = useWithdrawals();
   const create = useCreateWithdrawal();
@@ -405,9 +401,7 @@ function Withdraw() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Account Holder Name
-                  </label>
+                  <label className={labelCls}>Account Holder Name</label>
 
                   <input
                     required
@@ -620,16 +614,16 @@ function Withdraw() {
             </div>
 
             {/* Title */}
-            <h2 className="mb-12 text-left text-4xl font-extrabold leading-tight tracking-tight text-black">
+            <h2 className="mb-16 text-left text-4xl font-extrabold leading-tight tracking-tight text-black">
               Withdrawal Placed
               <br />
               Successfully
             </h2>
 
             {/* Main Success Box */}
-            <div className="w-full rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="w-full rounded-3xl border border-gray-200 bg-white px-6 py-10 shadow-sm">
               {/* Withdrawal Message */}
-              <div className="space-y-8 text-center text-base leading-7 text-gray-600">
+              <div className="space-y-10 text-center text-base leading-8 text-gray-600">
                 <p>
                   Your withdrawal of{" "}
                   <span className="font-bold text-black">
@@ -649,7 +643,7 @@ function Withdraw() {
               </div>
 
               {/* Wallet Address */}
-              <div className="mt-8 break-all rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 text-left font-mono text-sm leading-6 text-gray-700">
+              <div className="mt-12 break-all rounded-2xl border border-gray-200 bg-gray-50 px-5 py-6 text-left font-mono text-sm leading-7 text-gray-700">
                 {walletAddress}
               </div>
 
@@ -657,7 +651,7 @@ function Withdraw() {
               <button
                 type="button"
                 onClick={copyWalletAddress}
-                className="mt-5 flex h-16 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white text-base font-bold text-black transition hover:bg-gray-50"
+                className="mt-8 flex h-16 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white text-base font-bold text-black transition hover:bg-gray-50"
               >
                 {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
               </button>
@@ -667,7 +661,7 @@ function Withdraw() {
             <button
               type="button"
               onClick={closeDone}
-              className="mt-6 flex h-16 w-full items-center justify-center rounded-full bg-[#2616D9] text-lg font-bold text-white shadow-lg transition hover:opacity-90"
+              className="mt-8 flex h-16 w-full items-center justify-center rounded-full bg-[#2616D9] text-lg font-bold text-white shadow-lg transition hover:opacity-90"
             >
               OK
             </button>
