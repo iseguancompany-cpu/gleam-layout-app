@@ -63,6 +63,7 @@ function EditUserCard({
 
   const [values, setValues] = useState<
     AdminUserEdit & {
+      balance: number;
       withdrawal_fee: number;
       account_locked: boolean;
       lock_fee: number;
@@ -71,6 +72,7 @@ function EditUserCard({
     full_name: user.full_name ?? "",
     phone: user.phone ?? "",
     email: user.email ?? "",
+    balance: Number(user.balance ?? 0),
     withdrawal_fee: Number(user.withdrawal_fee ?? 0),
     id_verification_status:
       user.id_verification_status ?? "unverified",
@@ -129,6 +131,7 @@ function EditUserCard({
 
   const updateField = (
     key: keyof (AdminUserEdit & {
+      balance: number;
       withdrawal_fee: number;
       account_locked: boolean;
       lock_fee: number;
@@ -209,6 +212,26 @@ function EditUserCard({
                 updateField("full_name", event.target.value)
               }
               placeholder="Full Name"
+            />
+          </div>
+
+          {/* Balance */}
+          <div>
+            <label className={labelCls}>Balance</label>
+
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className={field}
+              value={values.balance}
+              onChange={(event) =>
+                updateField(
+                  "balance",
+                  Number(event.target.value) || 0,
+                )
+              }
+              placeholder="0.00"
             />
           </div>
 
