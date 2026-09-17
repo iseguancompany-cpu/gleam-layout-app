@@ -432,7 +432,7 @@ className={labelCls}>Last 4 Digits of Card</label>
                   }}
                   className="w-full rounded-xl border border-border bg-card py-3 text-sm font-bold text-foreground transition-colors hover:bg-accent"
                 >
-                  Copy Wallet Address
+                  (Copy Wallet Address)
                 </button>
               </div>
             </div>
