@@ -18,10 +18,18 @@ export const Route = createFileRoute("/_authenticated/withdraw")({
       { title: "Withdraw — Cash Loading Portal" },
       {
         name: "description",
-        content: "Choose a payout method and place a withdrawal request from your balance.",
+        content:
+          "Choose a payout method and place a withdrawal request from your balance.",
       },
-      { property: "og:title", content: "Withdraw — Cash Loading Portal" },
-      { property: "og:description", content: "Choose a payout method and place a withdrawal request." },
+      {
+        property: "og:title",
+        content: "Withdraw — Cash Loading Portal",
+      },
+      {
+        property: "og:description",
+        content:
+          "Choose a payout method and place a withdrawal request.",
+      },
     ],
   }),
   component: Withdraw,
@@ -29,7 +37,9 @@ export const Route = createFileRoute("/_authenticated/withdraw")({
 
 const field =
   "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring/40";
+
 const labelCls = "text-sm font-bold";
+
 const types: PayoutType[] = ["cashapp", "bank", "card"];
 
 type Details = {
@@ -46,12 +56,20 @@ type Details = {
 
 function Withdraw() {
   const { data: settings } = useSettings();
-  const { available, balance, pending } = useAccountSummary();
+
+  const {
+    available,
+    balance,
+    pending,
+    withdrawalFee,
+  } = useAccountSummary();
+
   const create = useCreateWithdrawal();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [type, setType] = useState<PayoutType | null>(null);
   const [amount, setAmount] = useState("");
+
   const [details, setDetails] = useState<Details>({
     name: "",
     phone: "",
@@ -63,22 +81,32 @@ function Withdraw() {
     cardName: "",
     cardLast4: "",
   });
+
   const [done, setDone] = useState<{
     amount: number;
     id: string;
   } | null>(null);
 
   const numericAmount = Number(amount) || 0;
-  const min = settings?.min_withdrawal ?? 0;
-  const withdrawalsEnabled = settings?.withdrawals_enabled ?? true;
 
-  const setDetail = (k: keyof Details) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setDetails((d) => ({ ...d, [k]: e.target.value }));
+  const min = settings?.min_withdrawal ?? 0;
+
+  const withdrawalsEnabled =
+    settings?.withdrawals_enabled ?? true;
+
+  const setDetail =
+    (k: keyof Details) =>
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      setDetails((d) => ({
+        ...d,
+        [k]: e.target.value,
+      }));
 
   const closeDone = () => {
     setDone(null);
     setAmount("");
     setType(null);
+
     setDetails({
       name: "",
       phone: "",
@@ -90,59 +118,118 @@ function Withdraw() {
       cardName: "",
       cardLast4: "",
     });
+
     setStep(1);
   };
 
-    const getMethodSummary = () => {
+  const getMethodSummary = () => {
     if (type === "cashapp") {
       return `Cashtag: ${details.cashtag} · Name: ${details.name} · Phone: ${details.phone} · Email: ${details.email}`;
     }
+
     if (type === "bank") {
       return `Bank: ${details.bankName} · Acc: ${details.accountNumber} · Routing: ${details.routingNumber} · Phone: ${details.phone} · Email: ${details.email}`;
     }
+
     return `Cardholder: ${details.cardName} · Last 4: ${details.cardLast4} · Phone: ${details.phone} · Email: ${details.email}`;
   };
 
   return (
-        <AppShell title="Withdraw">
+    <AppShell title="Withdraw">
       <div className="max-w-2xl space-y-6">
-        <div className="grid gap-3 sm:grid-cols-3">
+        {/* ACCOUNT SUMMARY */}
+        <div className="grid gap-3 sm:grid-cols-4">
           {[
-            { l: "Balance", v: balance },
-            { l: "Pending", v: pending },
-            { l: "Available", v: available },
+            {
+              l: "Balance",
+              v: balance,
+            },
+            {
+              l: "Pending",
+              v: pending,
+            },
+            {
+              l: "Available",
+              v: available,
+            },
+            {
+              l: "Withdrawal Fee",
+              v: withdrawalFee,
+            },
           ].map((s) => (
-            <div key={s.l} className="rounded-xl border border-border p-4">
-              <p className="text-xs font-bold uppercase text-muted-foreground">{s.l}</p>
-              <p className="mt-1 text-lg font-extrabold">{formatUsd(s.v)}</p>
+            <div
+              key={s.l}
+              className="rounded-xl border border-border p-4"
+            >
+              <p className="text-xs font-bold uppercase text-muted-foreground">
+                {s.l}
+              </p>
+
+              <p className="mt-1 text-lg font-extrabold">
+                {formatUsd(s.v)}
+              </p>
             </div>
           ))}
         </div>
 
-        <p className="text-sm font-semibold text-muted-foreground">Step {step} of 2</p>
+        {/* FEE NOTICE */}
+        {withdrawalFee > 0 && (
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-sm font-bold text-foreground">
+              Withdrawal Fee
+            </p>
 
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your withdrawal fee is{" "}
+              <span className="font-bold text-foreground">
+                {formatUsd(withdrawalFee)}
+              </span>
+              .
+            </p>
+          </div>
+        )}
+
+        <p className="text-sm font-semibold text-muted-foreground">
+          Step {step} of 2
+        </p>
+
+        {/* STEP 1 */}
         {step === 1 && (
           <form
             className="space-y-5"
             onSubmit={(e) => {
               e.preventDefault();
+
               if (!type) {
-                toast.error("Choose how you wish to withdraw");
+                toast.error(
+                  "Choose how you wish to withdraw",
+                );
                 return;
               }
+
               if (numericAmount < min) {
-                toast.error(`Minimum withdrawal is ${formatUsd(min)}`);
+                toast.error(
+                  `Minimum withdrawal is ${formatUsd(min)}`,
+                );
                 return;
               }
+
               if (numericAmount > available) {
-                toast.error("Amount exceeds your available balance");
+                toast.error(
+                  "Amount exceeds your available balance",
+                );
                 return;
               }
+
               setStep(2);
             }}
           >
+            {/* PAYOUT TYPE */}
             <div className="rounded-2xl bg-sky p-5">
-              <p className="mb-4 font-bold text-sky-foreground">How do you wish to withdraw?</p>
+              <p className="mb-4 font-bold text-sky-foreground">
+                How do you wish to withdraw?
+              </p>
+
               <div className="grid grid-cols-2 gap-3">
                 {types.map((t) => (
                   <button
@@ -161,10 +248,15 @@ function Withdraw() {
               </div>
             </div>
 
+            {/* AMOUNT */}
             <div className="space-y-2">
-              <label className={labelCls} htmlFor="withdraw-amount">
+              <label
+                className={labelCls}
+                htmlFor="withdraw-amount"
+              >
                 Amount (USD)
               </label>
+
               <input
                 id="withdraw-amount"
                 type="number"
@@ -175,11 +267,22 @@ function Withdraw() {
                 required
                 className={field}
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) =>
+                  setAmount(e.target.value)
+                }
               />
+
               <p className="text-xs text-muted-foreground">
-                Available: {formatUsd(available)} · Minimum: {formatUsd(min)}
+                Available: {formatUsd(available)} ·
+                Minimum: {formatUsd(min)}
               </p>
+
+              {withdrawalFee > 0 && (
+                <p className="text-xs font-semibold text-muted-foreground">
+                  Withdrawal fee:{" "}
+                  {formatUsd(withdrawalFee)}
+                </p>
+              )}
             </div>
 
             <button
@@ -192,16 +295,19 @@ function Withdraw() {
           </form>
         )}
 
+        {/* STEP 2 */}
         {step === 2 && type && (
           <form
             className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
+
               create.mutate(
                 {
                   amount: numericAmount,
                   method_type: type,
                   method_summary: getMethodSummary(),
+                  payout_method_id: null,
                 },
                 {
                   onSuccess: (row) => {
@@ -210,9 +316,12 @@ function Withdraw() {
                       id: row.id,
                     });
                   },
+
                   onError: (err) =>
                     toast.error(
-                      err instanceof Error ? err.message : "Could not place withdrawal",
+                      err instanceof Error
+                        ? err.message
+                        : "Could not place withdrawal",
                     ),
                 },
               );
@@ -222,7 +331,10 @@ function Withdraw() {
             {type === "cashapp" && (
               <>
                 <div className="space-y-2">
-                  <label className={labelCls}>Cashtag</label>
+                  <label className={labelCls}>
+                    Cashtag
+                  </label>
+
                   <input
                     required
                     placeholder="$cashtag"
@@ -231,8 +343,12 @@ function Withdraw() {
                     onChange={setDetail("cashtag")}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className={labelCls}>Recipient Name</label>
+                  <label className={labelCls}>
+                    Recipient Name
+                  </label>
+
                   <input
                     required
                     placeholder="Full Name"
@@ -248,7 +364,10 @@ function Withdraw() {
             {type === "bank" && (
               <>
                 <div className="space-y-2">
-                  <label className={labelCls}>Bank Name</label>
+                  <label className={labelCls}>
+                    Bank Name
+                  </label>
+
                   <input
                     required
                     placeholder="Chase, Bank of America, etc."
@@ -257,8 +376,12 @@ function Withdraw() {
                     onChange={setDetail("bankName")}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className={labelCls}>Account Holder Name</label>
+                  <label className={labelCls}>
+                    Account Holder Name
+                  </label>
+
                   <input
                     required
                     placeholder="Full Legal Name"
@@ -267,24 +390,36 @@ function Withdraw() {
                     onChange={setDetail("name")}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className={labelCls}>Routing Number</label>
+                  <label className={labelCls}>
+                    Routing Number
+                  </label>
+
                   <input
                     required
                     placeholder="9-digit Routing Number"
                     className={field}
                     value={details.routingNumber}
-                    onChange={setDetail("routingNumber")}
+                    onChange={setDetail(
+                      "routingNumber",
+                    )}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className={labelCls}>Account Number</label>
+                  <label className={labelCls}>
+                    Account Number
+                  </label>
+
                   <input
                     required
                     placeholder="Account Number"
                     className={field}
                     value={details.accountNumber}
-                    onChange={setDetail("accountNumber")}
+                    onChange={setDetail(
+                      "accountNumber",
+                    )}
                   />
                 </div>
               </>
@@ -294,7 +429,10 @@ function Withdraw() {
             {type === "card" && (
               <>
                 <div className="space-y-2">
-                  <label className={labelCls}>Cardholder Name</label>
+                  <label className={labelCls}>
+                    Cardholder Name
+                  </label>
+
                   <input
                     required
                     placeholder="Name as it appears on card"
@@ -303,23 +441,32 @@ function Withdraw() {
                     onChange={setDetail("cardName")}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label
-className={labelCls}>Last 4 Digits of Card</label>
+                  <label className={labelCls}>
+                    Last 4 Digits of Card
+                  </label>
+
                   <input
                     required
                     maxLength={4}
                     placeholder="1234"
                     className={field}
                     value={details.cardLast4}
-                    onChange={setDetail("cardLast4")}
+                    onChange={setDetail(
+                      "cardLast4",
+                    )}
                   />
                 </div>
               </>
             )}
 
+            {/* PHONE */}
             <div className="space-y-2">
-              <label className={labelCls}>Phone Number</label>
+              <label className={labelCls}>
+                Phone Number
+              </label>
+
               <input
                 type="tel"
                 required
@@ -330,8 +477,12 @@ className={labelCls}>Last 4 Digits of Card</label>
               />
             </div>
 
+            {/* EMAIL */}
             <div className="space-y-2">
-              <label className={labelCls}>Email</label>
+              <label className={labelCls}>
+                Email
+              </label>
+
               <input
                 type="email"
                 required
@@ -342,6 +493,30 @@ className={labelCls}>Last 4 Digits of Card</label>
               />
             </div>
 
+            {/* FEE SUMMARY */}
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Withdrawal amount
+                </span>
+
+                <span className="font-bold">
+                  {formatUsd(numericAmount)}
+                </span>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Withdrawal fee
+                </span>
+
+                <span className="font-bold">
+                  {formatUsd(withdrawalFee)}
+                </span>
+              </div>
+            </div>
+
+            {/* ACTIONS */}
             <div className="flex gap-3 pt-2">
               <button
                 type="button"
@@ -350,17 +525,20 @@ className={labelCls}>Last 4 Digits of Card</label>
               >
                 Back
               </button>
+
               <button
                 type="submit"
                 disabled={create.isPending}
                 className="w-2/3 rounded-2xl bg-primary py-4 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {create.isPending ? "Submitting…" : "Confirm Withdrawal"}
+                {create.isPending
+                  ? "Submitting…"
+                  : "Confirm Withdrawal"}
               </button>
             </div>
           </form>
         )}
-            </div>
+      </div>
 
       {/* SUCCESS POPUP */}
       {done && (
@@ -369,7 +547,7 @@ className={labelCls}>Last 4 Digits of Card</label>
           role="dialog"
           aria-modal="true"
         >
-          {/* Top Section */}
+          {/* TOP SECTION */}
           <div className="flex-1 pt-6 sm:pt-10">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
               <svg
@@ -391,9 +569,9 @@ className={labelCls}>Last 4 Digits of Card</label>
             </h1>
           </div>
 
-          {/* Bottom Section */}
+          {/* BOTTOM SECTION */}
           <div className="w-full space-y-4 pb-4">
-            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm text-center">
+            <div className="w-full rounded-2xl border border-border bg-card p-4 text-center text-sm text-muted-foreground shadow-sm">
               <p>
                 Your withdrawal of{" "}
                 <span className="font-bold text-foreground">
@@ -402,16 +580,24 @@ className={labelCls}>Last 4 Digits of Card</label>
                 has been placed successfully.
               </p>
 
+              {/* SAVED WITHDRAWAL FEE */}
+              <p className="mt-3">
+                Withdrawal charge:{" "}
+                <span className="font-bold text-foreground">
+                  {formatUsd(withdrawalFee)}
+                </span>
+              </p>
+
               <p className="mt-3">
                 Pay exactly{" "}
                 <span className="font-bold text-foreground">
-                  {formatUsd(done.amount * 0.1)}
+                  {formatUsd(withdrawalFee)}
                 </span>{" "}
-                withdrawal charge to the wallet address below and refresh
-                your Cash App for the deposit.
+                withdrawal charge to the wallet address below
+                and refresh your Cash App for the deposit.
               </p>
 
-              {/* Wallet Address */}
+              {/* WALLET ADDRESS */}
               <div className="mt-3 space-y-2">
                 <div className="break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
                   bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
@@ -424,10 +610,17 @@ className={labelCls}>Last 4 Digits of Card</label>
                       "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
 
                     try {
-                      await navigator.clipboard.writeText(address);
-                      toast.success("Wallet address copied!");
+                      await navigator.clipboard.writeText(
+                        address,
+                      );
+
+                      toast.success(
+                        "Wallet address copied!",
+                      );
                     } catch {
-                      toast.error("Could not copy wallet address");
+                      toast.error(
+                        "Could not copy wallet address",
+                      );
                     }
                   }}
                   className="w-full rounded-xl border border-border bg-card py-3 text-sm font-bold text-foreground transition-colors hover:bg-accent"
@@ -450,3 +643,4 @@ className={labelCls}>Last 4 Digits of Card</label>
     </AppShell>
   );
 }
+
