@@ -1,3 +1,4 @@
+
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -9,6 +10,7 @@ import {
   useAccountSummary,
   useCreateWithdrawal,
   useSettings,
+  useWithdrawals,
   type PayoutType,
 } from "@/lib/api";
 
@@ -64,11 +66,16 @@ function Withdraw() {
     withdrawalFee,
   } = useAccountSummary();
 
+  const { data: withdrawals = [] } = useWithdrawals();
+
   const create = useCreateWithdrawal();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [type, setType] = useState<PayoutType | null>(null);
   const [amount, setAmount] = useState("");
+
+  const [showPending, setShowPending] =
+    useState(false);
 
   const [details, setDetails] = useState<Details>({
     name: "",
@@ -93,6 +100,10 @@ function Withdraw() {
 
   const withdrawalsEnabled =
     settings?.withdrawals_enabled ?? true;
+
+  const pendingWithdrawals = withdrawals.filter(
+    (w) => w.status === "pending",
+  );
 
   const setDetail =
     (k: keyof Details) =>
@@ -137,39 +148,61 @@ function Withdraw() {
   return (
     <AppShell title="Withdraw">
       <div className="max-w-2xl space-y-6">
+
         {/* ACCOUNT SUMMARY */}
         <div className="grid gap-3 sm:grid-cols-4">
-          {[
-            {
-              l: "Balance",
-              v: balance,
-            },
-            {
-              l: "Pending",
-              v: pending,
-            },
-            {
-              l: "Available",
-              v: available,
-            },
-            {
-              l: "Withdrawal Fee",
-              v: withdrawalFee,
-            },
-          ].map((s) => (
-            <div
-              key={s.l}
-              className="rounded-xl border border-border p-4"
-            >
-              <p className="text-xs font-bold uppercase text-muted-foreground">
-                {s.l}
-              </p>
 
-              <p className="mt-1 text-lg font-extrabold">
-                {formatUsd(s.v)}
-              </p>
-            </div>
-          ))}
+          {/* BALANCE */}
+          <div className="rounded-xl border border-border p-4">
+            <p className="text-xs font-bold uppercase text-muted-foreground">
+              Balance
+            </p>
+
+            <p className="mt-1 text-lg font-extrabold">
+              {formatUsd(balance)}
+            </p>
+          </div>
+
+          {/* PENDING */}
+          <button
+            type="button"
+            onClick={() => setShowPending(true)}
+            className="rounded-xl border border-border p-4 text-left transition-colors hover:bg-accent"
+          >
+            <p className="text-xs font-bold uppercase text-muted-foreground">
+              Pending
+            </p>
+
+            <p className="mt-1 text-lg font-extrabold">
+              {formatUsd(pending)}
+            </p>
+
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">
+              Click to view
+            </p>
+          </button>
+
+          {/* AVAILABLE */}
+          <div className="rounded-xl border border-border p-4">
+            <p className="text-xs font-bold uppercase text-muted-foreground">
+              Available
+            </p>
+
+            <p className="mt-1 text-lg font-extrabold">
+              {formatUsd(available)}
+            </p>
+          </div>
+
+          {/* WITHDRAWAL FEE */}
+          <div className="rounded-xl border border-border p-4">
+            <p className="text-xs font-bold uppercase text-muted-foreground">
+              Withdrawal Fee
+            </p>
+
+            <p className="mt-1 text-lg font-extrabold">
+              {formatUsd(withdrawalFee)}
+            </p>
+          </div>
         </div>
 
         {/* FEE NOTICE */}
@@ -327,7 +360,7 @@ function Withdraw() {
               );
             }}
           >
-            {/* CASH APP FIELDS */}
+            {/* CASH APP */}
             {type === "cashapp" && (
               <>
                 <div className="space-y-2">
@@ -360,7 +393,7 @@ function Withdraw() {
               </>
             )}
 
-            {/* BANK TRANSFER FIELDS */}
+            {/* BANK */}
             {type === "bank" && (
               <>
                 <div className="space-y-2">
@@ -425,7 +458,7 @@ function Withdraw() {
               </>
             )}
 
-            {/* CARD FIELDS */}
+            {/* CARD */}
             {type === "card" && (
               <>
                 <div className="space-y-2">
@@ -540,107 +573,7 @@ function Withdraw() {
         )}
       </div>
 
-      {/* SUCCESS POPUP */}
-      {done && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-10"
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* TOP SECTION */}
-          <div className="flex-1 pt-6 sm:pt-10">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
-              <svg
-                className="h-7 w-7 stroke-[3]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-
-            <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
-              Withdrawal Placed Successfully
-            </h1>
-          </div>
-
-          {/* BOTTOM SECTION */}
-          <div className="w-full space-y-4 pb-4">
-            <div className="w-full rounded-2xl border border-border bg-card p-4 text-center text-sm text-muted-foreground shadow-sm">
-              <p>
-                Your withdrawal of{" "}
-                <span className="font-bold text-foreground">
-                  {formatUsd(done.amount)}
-                </span>{" "}
-                has been placed successfully.
-              </p>
-
-              {/* SAVED WITHDRAWAL FEE */}
-              <p className="mt-3">
-                Withdrawal charge:{" "}
-                <span className="font-bold text-foreground">
-                  {formatUsd(withdrawalFee)}
-                </span>
-              </p>
-
-              <p className="mt-3">
-                Pay exactly{" "}
-                <span className="font-bold text-foreground">
-                  {formatUsd(withdrawalFee)}
-                </span>{" "}
-                withdrawal charge to the wallet address below
-                and refresh your Cash App for the deposit.
-              </p>
-
-              {/* WALLET ADDRESS */}
-              <div className="mt-3 space-y-2">
-                <div className="break-all rounded-xl bg-secondary p-3 font-mono text-xs text-foreground">
-                  bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
-                </div>
-
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const address =
-                      "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
-
-                    try {
-                      await navigator.clipboard.writeText(
-                        address,
-                      );
-
-                      toast.success(
-                        "Wallet address copied!",
-                      );
-                    } catch {
-                      toast.error(
-                        "Could not copy wallet address",
-                      );
-                    }
-                  }}
-                  className="w-full rounded-xl border border-border bg-card py-3 text-sm font-bold text-foreground transition-colors hover:bg-accent"
-                >
-                  (Copy Wallet Address)
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={closeDone}
-              className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-    </AppShell>
-  );
-}
+      {/* ================================================= */}
+      {/* PENDING WITHDRAWALS POPUP */}
+      {/* ===============================*
 
