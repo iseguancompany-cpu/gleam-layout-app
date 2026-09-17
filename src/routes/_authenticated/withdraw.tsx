@@ -365,41 +365,53 @@ className={labelCls}>Last 4 Digits of Card</label>
       </div>
 
       {/* SUCCESS POPUP */}
+            {/* FULL-SCREEN SUCCESS VIEW */}
       {done && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          className="fixed inset-0 z-50 flex flex-col justify-between bg-background p-6 sm:p-10"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-2xl text-center">
-            {/* Green Success Icon */}
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-emerald-500 bg-emerald-50 text-emerald-500">
-              <CircleCheck className="h-9 w-9 text-emerald-600" />
+          {/* Top Section */}
+          <div className="pt-6 sm:pt-10">
+            {/* Cyan Checkmark Circle */}
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#26c6da] text-white shadow-sm">
+              <svg
+                className="h-7 w-7 stroke-[3]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
 
-            {/* Popup Title */}
-            <h2 className="mt-4 text-2xl font-extrabold text-foreground">
+            {/* Title & Amount */}
+            <h1 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
               Withdrawal Placed Successfully
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Your withdrawal of {formatUsd(done.amount)} has been submitted.
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your withdrawal of {formatUsd(done.amount)} has been placed.
             </p>
+          </div>
 
-            {/* Custom Note Section above the OK button */}
-            <div className="mt-5 rounded-2xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-              {/* Note placeholder: tell me what text or elements to place here */}
+          {/* Bottom Section (Note Div + OK Button) */}
+          <div className="w-full space-y-4 pb-4">
+            <div className="w-full rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
               <p>Check your email for confirmation.</p>
             </div>
 
             <button
               type="button"
               onClick={closeDone}
-              className="mt-6 w-full rounded-2xl bg-primary py-3.5 font-bold text-primary-foreground transition-opacity hover:opacity-90"
+              className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
               OK
             </button>
           </div>
         </div>
+      )}
+
       )}
     </AppShell>
   );
