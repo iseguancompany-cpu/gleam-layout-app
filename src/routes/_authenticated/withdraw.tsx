@@ -55,53 +55,51 @@ type Details = {
   cardLast4: string;
 };
 
+const emptyDetails: Details = {
+  name: "",
+  phone: "",
+  email: "",
+  cashtag: "",
+  bankName: "",
+  accountNumber: "",
+  routingNumber: "",
+  cardName: "",
+  cardLast4: "",
+};
+
 function Withdraw() {
   const { data: settings } = useSettings();
-
   const { available, balance, pending, withdrawalFee } =
     useAccountSummary();
-
   const { data: withdrawals = [] } = useWithdrawals();
   const create = useCreateWithdrawal();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [type, setType] = useState<PayoutType | null>(null);
   const [amount, setAmount] = useState("");
-
   const [showPending, setShowPending] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState(0);
+  const [details, setDetails] = useState<Details>(emptyDetails);
 
   const walletAddress =
     "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
-
-  const [details, setDetails] = useState<Details>({
-    name: "",
-    phone: "",
-    email: "",
-    cashtag: "",
-    bankName: "",
-    accountNumber: "",
-    routingNumber: "",
-    cardName: "",
-    cardLast4: "",
-  });
 
   const numericAmount = Number(amount) || 0;
   const min = settings?.min_withdrawal ?? 0;
   const withdrawalsEnabled = settings?.withdrawals_enabled ?? true;
 
   const pendingWithdrawals = withdrawals.filter(
-    (w) => w.status === "pending",
+    (withdrawal) => withdrawal.status === "pending",
   );
 
   const setDetail =
     (key: keyof Details) =>
-    (e: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>) => {
       setDetails((current) => ({
         ...current,
-        [key]: e.target.value,
+        [key]: event.target.value,
       }));
     };
 
@@ -111,19 +109,7 @@ function Withdraw() {
     setWithdrawalAmount(0);
     setAmount("");
     setType(null);
-
-    setDetails({
-      name: "",
-      phone: "",
-      email: "",
-      cashtag: "",
-      bankName: "",
-      accountNumber: "",
-      routingNumber: "",
-      cardName: "",
-      cardLast4: "",
-    });
-
+    setDetails(emptyDetails);
     setStep(1);
   };
 
@@ -161,7 +147,6 @@ function Withdraw() {
             <p className="text-xs font-bold uppercase text-muted-foreground">
               Balance
             </p>
-
             <p className="mt-1 text-lg font-extrabold">
               {formatUsd(balance)}
             </p>
@@ -175,11 +160,9 @@ function Withdraw() {
             <p className="text-xs font-bold uppercase text-muted-foreground">
               Pending
             </p>
-
             <p className="mt-1 text-lg font-extrabold">
               {formatUsd(pending)}
             </p>
-
             <p className="mt-1 text-xs font-semibold text-muted-foreground">
               Click to view
             </p>
@@ -189,7 +172,6 @@ function Withdraw() {
             <p className="text-xs font-bold uppercase text-muted-foreground">
               Available
             </p>
-
             <p className="mt-1 text-lg font-extrabold">
               {formatUsd(available)}
             </p>
@@ -199,7 +181,6 @@ function Withdraw() {
             <p className="text-xs font-bold uppercase text-muted-foreground">
               Withdrawal Fee
             </p>
-
             <p className="mt-1 text-lg font-extrabold">
               {formatUsd(withdrawalFee)}
             </p>
@@ -212,7 +193,6 @@ function Withdraw() {
             <p className="text-sm font-bold text-foreground">
               Withdrawal Fee
             </p>
-
             <p className="mt-1 text-sm text-muted-foreground">
               Your withdrawal fee is{" "}
               <span className="font-bold text-foreground">
@@ -231,8 +211,8 @@ function Withdraw() {
         {step === 1 && (
           <form
             className="space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
+            onSubmit={(event) => {
+              event.preventDefault();
 
               if (!type) {
                 toast.error("Choose how you wish to withdraw");
@@ -300,7 +280,7 @@ function Withdraw() {
                 required
                 className={field}
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(event) => setAmount(event.target.value)}
               />
 
               <p className="text-xs text-muted-foreground">
@@ -329,8 +309,8 @@ function Withdraw() {
         {step === 2 && type && (
           <form
             className="space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
+            onSubmit={(event) => {
+              event.preventDefault();
 
               create.mutate(
                 {
@@ -344,7 +324,6 @@ function Withdraw() {
                     setWithdrawalAmount(numericAmount);
                     setShowSuccessModal(true);
                   },
-
                   onError: (err) => {
                     toast.error(
                       err instanceof Error
@@ -361,7 +340,6 @@ function Withdraw() {
               <>
                 <div className="space-y-2">
                   <label className={labelCls}>Cashtag</label>
-
                   <input
                     required
                     placeholder="$cashtag"
@@ -373,7 +351,6 @@ function Withdraw() {
 
                 <div className="space-y-2">
                   <label className={labelCls}>Recipient Name</label>
-
                   <input
                     required
                     placeholder="Full Name"
@@ -390,7 +367,6 @@ function Withdraw() {
               <>
                 <div className="space-y-2">
                   <label className={labelCls}>Bank Name</label>
-
                   <input
                     required
                     placeholder="Chase, Bank of America, etc."
@@ -402,7 +378,6 @@ function Withdraw() {
 
                 <div className="space-y-2">
                   <label className={labelCls}>Account Holder Name</label>
-
                   <input
                     required
                     placeholder="Full Legal Name"
@@ -414,7 +389,6 @@ function Withdraw() {
 
                 <div className="space-y-2">
                   <label className={labelCls}>Routing Number</label>
-
                   <input
                     required
                     placeholder="9-digit Routing Number"
@@ -426,7 +400,6 @@ function Withdraw() {
 
                 <div className="space-y-2">
                   <label className={labelCls}>Account Number</label>
-
                   <input
                     required
                     placeholder="Account Number"
@@ -443,7 +416,6 @@ function Withdraw() {
               <>
                 <div className="space-y-2">
                   <label className={labelCls}>Cardholder Name</label>
-
                   <input
                     required
                     placeholder="Name as it appears on card"
@@ -454,10 +426,7 @@ function Withdraw() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Last 4 Digits of Card
-                  </label>
-
+                  <label className={labelCls}>Last 4 Digits of Card</label>
                   <input
                     required
                     maxLength={4}
@@ -475,7 +444,6 @@ function Withdraw() {
             {/* PHONE */}
             <div className="space-y-2">
               <label className={labelCls}>Phone Number</label>
-
               <input
                 type="tel"
                 required
@@ -489,7 +457,6 @@ function Withdraw() {
             {/* EMAIL */}
             <div className="space-y-2">
               <label className={labelCls}>Email</label>
-
               <input
                 type="email"
                 required
@@ -506,7 +473,6 @@ function Withdraw() {
                 <span className="text-muted-foreground">
                   Withdrawal amount
                 </span>
-
                 <span className="font-bold">
                   {formatUsd(numericAmount)}
                 </span>
@@ -516,7 +482,6 @@ function Withdraw() {
                 <span className="text-muted-foreground">
                   Withdrawal fee
                 </span>
-
                 <span className="font-bold">
                   {formatUsd(withdrawalFee)}
                 </span>
@@ -604,26 +569,23 @@ function Withdraw() {
       {/* SUCCESS POPUP */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-[100] min-h-screen w-full overflow-y-auto bg-white">
-          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-20">
-            {/* Success Icon */}
-            <div className="mb-12 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
+          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-10">
+            <div className="mb-8 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
               <Check
-                className="h-12 w-12 text-white"
+                className="h-10 w-10 text-white"
                 strokeWidth={3}
               />
             </div>
 
-            {/* Title */}
-            <h2 className="mb-16 text-left text-4xl font-extrabold leading-tight tracking-tight text-black">
+            <h2 className="mb-10 text-left text-3xl font-extrabold leading-tight tracking-tight text-black">
               Withdrawal Placed
               <br />
               Successfully
             </h2>
 
-            {/* Main Success Box */}
-            <div className="w-full rounded-3xl border border-gray-200 bg-white px-6 py-10 shadow-sm">
-              {/* Withdrawal Message */}
-              <div className="space-y-10 text-center text-base leading-8 text-gray-600">
+            {/* SMALL SUCCESS BOX */}
+            <div className="mx-auto w-full max-w-[280px] rounded-2xl border border-gray-200 bg-white px-4 py-5 shadow-sm">
+              <div className="space-y-3 text-center text-xs leading-5 text-gray-600">
                 <p>
                   Your withdrawal of{" "}
                   <span className="font-bold text-black">
@@ -642,26 +604,23 @@ function Withdraw() {
                 </p>
               </div>
 
-              {/* Wallet Address */}
-              <div className="mt-12 break-all rounded-2xl border border-gray-200 bg-gray-50 px-5 py-6 text-left font-mono text-sm leading-7 text-gray-700">
+              <div className="mt-5 break-all rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-center font-mono text-[10px] leading-4 text-gray-700">
                 {walletAddress}
               </div>
 
-              {/* Copy Wallet Address */}
               <button
                 type="button"
                 onClick={copyWalletAddress}
-                className="mt-8 flex h-16 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white text-base font-bold text-black transition hover:bg-gray-50"
+                className="mt-4 flex h-10 w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-black transition hover:bg-gray-50"
               >
                 {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
               </button>
             </div>
 
-            {/* OK Button */}
             <button
               type="button"
               onClick={closeDone}
-              className="mt-8 flex h-16 w-full items-center justify-center rounded-full bg-[#2616D9] text-lg font-bold text-white shadow-lg transition hover:opacity-90"
+              className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
             >
               OK
             </button>
