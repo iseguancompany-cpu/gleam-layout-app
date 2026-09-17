@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -28,8 +29,7 @@ export const Route = createFileRoute("/_authenticated/withdraw")({
       },
       {
         property: "og:description",
-        content:
-          "Choose a payout method and place a withdrawal request.",
+        content: "Choose a payout method and place a withdrawal request.",
       },
     ],
   }),
@@ -66,7 +66,6 @@ function Withdraw() {
   } = useAccountSummary();
 
   const { data: withdrawals = [] } = useWithdrawals();
-
   const create = useCreateWithdrawal();
 
   const [step, setStep] = useState<1 | 2>(1);
@@ -74,6 +73,12 @@ function Withdraw() {
   const [amount, setAmount] = useState("");
 
   const [showPending, setShowPending] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [withdrawalAmount, setWithdrawalAmount] = useState(0);
+
+  const walletAddress =
+    "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
 
   const [details, setDetails] = useState<Details>({
     name: "",
@@ -93,11 +98,8 @@ function Withdraw() {
   } | null>(null);
 
   const numericAmount = Number(amount) || 0;
-
   const min = settings?.min_withdrawal ?? 0;
-
-  const withdrawalsEnabled =
-    settings?.withdrawals_enabled ?? true;
+  const withdrawalsEnabled = settings?.withdrawals_enabled ?? true;
 
   const pendingWithdrawals = withdrawals.filter(
     (w) => w.status === "pending",
@@ -105,7 +107,7 @@ function Withdraw() {
 
   const setDetail =
     (k: keyof Details) =>
-    (e: React.ChangeEvent<HTMLInputElement>) =>
+    (e: ChangeEvent<HTMLInputElement>) =>
       setDetails((d) => ({
         ...d,
         [k]: e.target.value,
@@ -113,6 +115,10 @@ function Withdraw() {
 
   const closeDone = () => {
     setDone(null);
+    setShowSuccessModal(false);
+    setCopied(false);
+    setWithdrawalAmount(0);
+
     setAmount("");
     setType(null);
 
@@ -143,14 +149,25 @@ function Withdraw() {
     return `Cardholder: ${details.cardName} · Last 4: ${details.cardLast4} · Phone: ${details.phone} · Email: ${details.email}`;
   };
 
+  const copyWalletAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch {
+      toast.error("Could not copy wallet address");
+    }
+  };
+
   return (
     <AppShell title="Withdraw">
       <div className="max-w-2xl space-y-6">
 
         {/* ACCOUNT SUMMARY */}
         <div className="grid gap-3 sm:grid-cols-4">
-
-          {/* BALANCE */}
           <div className="rounded-xl border border-border p-4">
             <p className="text-xs font-bold uppercase text-muted-foreground">
               Balance
@@ -161,7 +178,6 @@ function Withdraw() {
             </p>
           </div>
 
-          {/* PENDING */}
           <button
             type="button"
             onClick={() => setShowPending(true)}
@@ -180,7 +196,6 @@ function Withdraw() {
             </p>
           </button>
 
-          {/* AVAILABLE */}
           <div className="rounded-xl border border-border p-4">
             <p className="text-xs font-bold uppercase text-muted-foreground">
               Available
@@ -191,7 +206,6 @@ function Withdraw() {
             </p>
           </div>
 
-          {/* WITHDRAWAL FEE */}
           <div className="rounded-xl border border-border p-4">
             <p className="text-xs font-bold uppercase text-muted-foreground">
               Withdrawal Fee
@@ -242,16 +256,12 @@ function Withdraw() {
               }
 
               if (numericAmount < min) {
-                toast.error(
-                  `Minimum withdrawal is ${formatUsd(min)}`,
-                );
+                toast.error(`Minimum withdrawal is ${formatUsd(min)}`);
                 return;
               }
 
               if (numericAmount > available) {
-                toast.error(
-                  "Amount exceeds your available balance",
-                );
+                toast.error("Amount exceeds your available balance");
                 return;
               }
 
@@ -263,7 +273,6 @@ function Withdraw() {
               setStep(2);
             }}
           >
-            {/* PAYOUT TYPE */}
             <div className="rounded-2xl bg-sky p-5">
               <p className="mb-4 font-bold text-sky-foreground">
                 How do you wish to withdraw?
@@ -287,12 +296,8 @@ function Withdraw() {
               </div>
             </div>
 
-            {/* AMOUNT */}
             <div className="space-y-2">
-              <label
-                className={labelCls}
-                htmlFor="withdraw-amount"
-              >
+              <label className={labelCls} htmlFor="withdraw-amount">
                 Amount (USD)
               </label>
 
@@ -351,6 +356,9 @@ function Withdraw() {
                       amount: numericAmount,
                       id: row.id,
                     });
+
+                    setWithdrawalAmount(numericAmount);
+                    setShowSuccessModal(true);
                   },
 
                   onError: (err) =>
@@ -367,9 +375,7 @@ function Withdraw() {
             {type === "cashapp" && (
               <>
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Cashtag
-                  </label>
+                  <label className={labelCls}>Cashtag</label>
 
                   <input
                     required
@@ -381,9 +387,7 @@ function Withdraw() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Recipient Name
-                  </label>
+                  <label className={labelCls}>Recipient Name</label>
 
                   <input
                     required
@@ -400,9 +404,7 @@ function Withdraw() {
             {type === "bank" && (
               <>
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Bank Name
-                  </label>
+                  <label className={labelCls}>Bank Name</label>
 
                   <input
                     required
@@ -428,9 +430,7 @@ function Withdraw() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Routing Number
-                  </label>
+                  <label className={labelCls}>Routing Number</label>
 
                   <input
                     required
@@ -442,9 +442,7 @@ function Withdraw() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Account Number
-                  </label>
+                  <label className={labelCls}>Account Number</label>
 
                   <input
                     required
@@ -461,9 +459,7 @@ function Withdraw() {
             {type === "card" && (
               <>
                 <div className="space-y-2">
-                  <label className={labelCls}>
-                    Cardholder Name
-                  </label>
+                  <label className={labelCls}>Cardholder Name</label>
 
                   <input
                     required
@@ -495,9 +491,7 @@ function Withdraw() {
 
             {/* PHONE */}
             <div className="space-y-2">
-              <label className={labelCls}>
-                Phone Number
-              </label>
+              <label className={labelCls}>Phone Number</label>
 
               <input
                 type="tel"
@@ -511,9 +505,7 @@ function Withdraw() {
 
             {/* EMAIL */}
             <div className="space-y-2">
-              <label className={labelCls}>
-                Email
-              </label>
+              <label className={labelCls}>Email</label>
 
               <input
                 type="email"
@@ -572,10 +564,7 @@ function Withdraw() {
         )}
       </div>
 
-      {/* ================================================= */}
       {/* PENDING WITHDRAWALS POPUP */}
-      {/* ================================================= */}
-
       {showPending && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl">
@@ -631,76 +620,74 @@ function Withdraw() {
         </div>
       )}
 
-     {showSuccessModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5">
-    <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl">
-      
-      {/* Success Icon */}
-      <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#19B5D1]">
-        <Check className="h-12 w-12 text-white" strokeWidth={3} />
-      </div>
+      {/* SUCCESS POPUP */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5">
+          <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl">
 
-      {/* Title */}
-      <h2 className="mb-10 text-3xl font-bold leading-tight text-black">
-        Withdrawal Placed
-        <br />
-        Successfully
-      </h2>
+            {/* Success Icon */}
+            <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#19B5D1]">
+              <Check
+                className="h-12 w-12 text-white"
+                strokeWidth={3}
+              />
+            </div>
 
-      {/* Withdrawal Message */}
-      <div className="space-y-6 text-[18px] leading-relaxed text-gray-700">
-        <p>
-          Your withdrawal of{" "}
-          <span className="font-bold text-black">
-            ${withdrawalAmount.toFixed(2)}
-          </span>{" "}
-          has been placed successfully.
-        </p>
+            {/* Title */}
+            <h2 className="mb-10 text-3xl font-bold leading-tight text-black">
+              Withdrawal Placed
+              <br />
+              Successfully
+            </h2>
 
-        <p>
-          Pay exactly{" "}
-          <span className="font-bold text-black">
-            ${withdrawalFee.toFixed(2)}
-          </span>{" "}
-          withdrawal charge to the wallet address below and refresh your Cash App
-          for the deposit.
-        </p>
-      </div>
+            {/* Withdrawal Message */}
+            <div className="space-y-6 text-[18px] leading-relaxed text-gray-700">
+              <p>
+                Your withdrawal of{" "}
+                <span className="font-bold text-black">
+                  ${withdrawalAmount.toFixed(2)}
+                </span>{" "}
+                has been placed successfully.
+              </p>
 
-      {/* Wallet Address */}
-      <div className="mt-6">
-        <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 font-mono text-[16px] text-gray-700">
-          {walletAddress}
+              <p>
+                Your withdrawal request is now being processed. Please keep
+                your withdrawal details for your records.
+              </p>
+            </div>
+
+            {/* Wallet Address */}
+            <div className="mt-6">
+              <p className="mb-2 text-sm font-bold text-gray-600">
+               bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x
+              </p>
+
+              <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 font-mono text-[16px] text-gray-700">
+                {walletAddress}
+              </div>
+
+              <button
+                type="button"
+                onClick={copyWalletAddress}
+                className="mt-3 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-5 text-lg font-bold text-black transition hover:bg-gray-50"
+              >
+                {copied
+                  ? "Wallet Address Copied!"
+                  : "Copy Wallet Address"}
+              </button>
+            </div>
+
+            {/* OK Button */}
+            <button
+              type="button"
+              onClick={closeDone}
+              className="mt-7 w-full rounded-full bg-[#2616D9] py-5 text-xl font-bold text-white shadow-lg transition hover:opacity-90"
+            >
+              OK
+            </button>
+          </div>
         </div>
-
-        <button
-          onClick={async () => {
-            await navigator.clipboard.writeText(walletAddress);
-            setCopied(true);
-
-            setTimeout(() => {
-              setCopied(false);
-            }, 2000);
-          }}
-          className="mt-3 flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white py-5 text-lg font-bold text-black"
-        >
-          {copied ? "Wallet Address Copied!" : "Copy Wallet Address"}
-        </button>
-      </div>
-
-      {/* OK Button */}
-      <button
-        onClick={() => {
-          setShowSuccessModal(false);
-          setCopied(false);
-        }}
-        className="mt-7 w-full rounded-full bg-[#2616D9] py-5 text-xl font-bold text-white shadow-lg"
-      >
-        OK
-      </button>
-    </div>
-  </div>
-)}
+      )}
     </AppShell>
   );
 }
