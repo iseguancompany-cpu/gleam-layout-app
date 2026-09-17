@@ -644,25 +644,26 @@ function Withdraw() {
             Successfully
           </h2>
 
-          {/* Withdrawal Message */}
-<div className="mt-21 space-y-10 text-lg leading-8 text-gray-600">
-  <p>
-    Your withdrawal of{" "}
-    <span className="font-bold text-black">
-      ${withdrawalAmount.toFixed(2)}
-    </span>{" "}
-    has been placed successfully.
-  </p>
+         {/* Withdrawal Message */}
+      <div className="max-w-[650px] space-y-10 text-left text-lg leading-8 text-gray-600">
+        <p>
+          Your withdrawal of{" "}
+          <span className="font-bold text-black">
+            ${withdrawalAmount.toFixed(2)}
+          </span>{" "}
+          has been placed successfully.
+        </p>
 
-  <p>
-    Pay exactly{" "}
-    <span className="font-bold text-black">
-      {formatUsd(withdrawalFee)}
-    </span>{" "}
-    withdrawal charge to the wallet address below and refresh your Cash
-    App for the deposit.
-  </p>
-</div>
+        <p>
+          Pay exactly{" "}
+          <span className="font-bold text-black">
+            {formatUsd(withdrawalFee)}
+          </span>{" "}
+          withdrawal charge to the wallet address below and refresh your Cash
+          App for the deposit.
+        </p>
+      </div>
+
           {/* Wallet + Buttons */}
           <div className="mt-16">
             <div className="break-all rounded-2xl border border-gray-200 bg-gray-50 px-6 py-6 text-left font-mono text-base leading-7 text-gray-700">
