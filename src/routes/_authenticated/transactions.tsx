@@ -3,9 +3,21 @@ import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatUsd, payoutLabels, useProfile, useWithdrawals } from "@/lib/api";
+import {
+  formatUsd,
+  payoutLabels,
+  useProfile,
+  useWithdrawals,
+} from "@/lib/api";
 
-type WithdrawalRow = NonNullable<ReturnType<typeof useWithdrawals>["data"]>[number];
+type WithdrawalRow = NonNullable<
+  ReturnType<typeof useWithdrawals>["data"]
+>[number];
+
+type WithdrawalWithCashappTag = WithdrawalRow & {
+  cashapp_tag?: string | null;
+  cashtag?: string | null;
+};
 
 export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({
@@ -13,14 +25,52 @@ export const Route = createFileRoute("/_authenticated/transactions")({
       { title: "Transactions — Cash Loading" },
       {
         name: "description",
-        content: "Review your withdrawal requests, their amounts, dates and current status.",
+        content:
+          "Review your withdrawal requests, their amounts, dates and current status.",
       },
-      { property: "og:title", content: "Transactions — Cash Loading" },
-      { property: "og:description", content: "Review your withdrawal requests and their status." },
+      {
+        property: "og:title",
+        content: "Transactions — Cash Loading",
+      },
+      {
+        property: "og:description",
+        content: "Review your withdrawal requests and their status.",
+      },
     ],
   }),
   component: Transactions,
 });
+
+function maskCashtag(value?: string | null) {
+  if (!value) return "";
+
+  const cashtag = value.startsWith("$")
+    ? value.slice(1)
+    : value;
+
+  if (!cashtag) return "";
+
+  if (cashtag.length <= 2) {
+    return `$${cashtag.charAt(0)}*`;
+  }
+
+  if (cashtag.length <= 4) {
+    return `$${cashtag.charAt(0)}***`;
+  }
+
+  return `$${cashtag.charAt(0)}***${cashtag.charAt(cashtag.length - 1)}`;
+}
+
+function getWithdrawalCashtag(withdrawal: WithdrawalRow) {
+  const withdrawalData = withdrawal as WithdrawalWithCashappTag;
+
+  const cashtag =
+    withdrawalData.cashapp_tag ??
+    withdrawalData.cashtag ??
+    "";
+
+  return maskCashtag(cashtag);
+}
 
 function WithdrawalDetailsModal({
   withdrawal,
@@ -33,7 +83,9 @@ function WithdrawalDetailsModal({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+
     window.addEventListener("keydown", onKey);
+
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
@@ -47,25 +99,31 @@ function WithdrawalDetailsModal({
       aria-modal="true"
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-card p-6 shadow-2xl text-center"
+        className="w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Circular Warning Icon */}
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-amber-500 bg-amber-50 text-amber-500">
-          <span className="text-3xl font-extrabold leading-none">!</span>
+          <span className="text-3xl font-extrabold leading-none">
+            !
+          </span>
         </div>
 
-        {/* Title & Amount Subtitle */}
         <h2 className="mt-4 text-2xl font-extrabold text-foreground">
-          {isPending ? "Withdrawal Pending" : `Withdrawal ${withdrawal.status.toUpperCase()}`}
+          {isPending
+            ? "Withdrawal Pending"
+            : `Withdrawal ${withdrawal.status.toUpperCase()}`}
         </h2>
+
         <p className="mt-1 text-sm text-muted-foreground">
           {isPending
-            ? `Waiting for your ${formatUsd(Number(withdrawal.amount))} withdrawal fee to process.`
-            : `Your withdrawal of ${formatUsd(Number(withdrawal.amount))} is ${withdrawal.status}.`}
+            ? `Waiting for your ${formatUsd(
+                Number(withdrawal.amount),
+              )} withdrawal fee to process.`
+            : `Your withdrawal of ${formatUsd(
+                Number(withdrawal.amount),
+              )} is ${withdrawal.status}.`}
         </p>
 
-              {/* Admin Note */}
         {withdrawal.admin_note?.trim() && (
           <div className="mt-5 rounded-2xl border border-border bg-muted/20 p-4 text-left">
             <p className="whitespace-pre-wrap text-sm text-foreground">
@@ -74,11 +132,10 @@ function WithdrawalDetailsModal({
           </div>
         )}
 
-
         <button
           type="button"
           onClick={onClose}
-          className="mt-6 w-full rounded-2xl bg-foreground py-3 font-bold text-background transition hover:opacity-90 cursor-pointer"
+          className="mt-6 w-full cursor-pointer rounded-2xl bg-foreground py-3 font-bold text-background transition hover:opacity-90"
         >
           OK
         </button>
@@ -90,7 +147,9 @@ function WithdrawalDetailsModal({
 function Transactions() {
   const { data: profile } = useProfile();
   const { data: withdrawals = [], isLoading } = useWithdrawals();
-  const [selected, setSelected] = useState<WithdrawalRow | null>(null);
+  const [selected, setSelected] = useState<WithdrawalRow | null>(
+    null,
+  );
 
   const name = profile?.full_name || "Account";
   const count = withdrawals.length;
@@ -98,12 +157,17 @@ function Transactions() {
   return (
     <AppShell>
       <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <h1 className="text-2xl font-extrabold sm:text-3xl">Transactions</h1>
+        <h1 className="text-2xl font-extrabold sm:text-3xl">
+          Transactions
+        </h1>
+
         <p className="mt-1 text-sm text-muted-foreground">
-          {count} {count === 1 ? "withdrawal request" : "withdrawal requests"}
+          {count}{" "}
+          {count === 1
+            ? "withdrawal request"
+            : "withdrawal requests"}
         </p>
 
-        {/* Horizontal table on all screen sizes */}
         <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[520px] text-sm">
             <thead>
@@ -115,34 +179,61 @@ function Transactions() {
                 <th className="py-3 font-bold">Date</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-border">
-              {withdrawals.map((w) => (
-                <tr key={w.id}>
-                  <td className="py-4 pr-3 font-semibold">{name}</td>
-                  <td className="py-4 pr-3">
-                    {payoutLabels[w.method_type] ?? w.method_type}
-                  </td>
-                  <td className="py-4 pr-3 font-bold">{formatUsd(Number(w.amount))}</td>
-                  <td className="py-4 pr-3">
-                    <button
-  type="button"
-                      onClick={() => setSelected(w)}
-                      className="cursor-pointer transition hover:opacity-80"
-                    >
-                      <StatusBadge status={w.status} />
-                    </button>
-                  </td>
-                  <td className="py-4 text-xs text-muted-foreground whitespace-nowrap">
-                    {new Date(w.created_at).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </td>
-                </tr>
-              ))}
+              {withdrawals.map((w) => {
+                const cashtag = getWithdrawalCashtag(w);
+
+                return (
+                  <tr key={w.id}>
+                    <td className="py-4 pr-3 font-semibold">
+                      {name}
+                    </td>
+
+                    <td className="py-4 pr-3">
+                      {payoutLabels[w.method_type] ??
+                        w.method_type}
+                    </td>
+
+                    <td className="py-4 pr-3 font-bold">
+                      {formatUsd(Number(w.amount))}
+                    </td>
+
+                    <td className="py-4 pr-3">
+                      <button
+                        type="button"
+                        onClick={() => setSelected(w)}
+                        className="cursor-pointer transition hover:opacity-80"
+                      >
+                        <StatusBadge status={w.status} />
+                      </button>
+                    </td>
+
+                    <td className="whitespace-nowrap py-4 text-xs text-muted-foreground">
+                      <div>
+                        {new Date(w.created_at).toLocaleString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: false,
+                          },
+                        )}
+                      </div>
+
+                      {cashtag && (
+                        <div className="mt-1 font-medium text-foreground">
+                          ({cashtag})
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -155,7 +246,10 @@ function Transactions() {
       </div>
 
       {selected && (
-        <WithdrawalDetailsModal withdrawal={selected} onClose={() => setSelected(null)} />
+        <WithdrawalDetailsModal
+          withdrawal={selected}
+          onClose={() => setSelected(null)}
+        />
       )}
     </AppShell>
   );
