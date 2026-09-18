@@ -126,18 +126,47 @@ function Withdraw() {
   };
 
   const copyWalletAddress = async () => {
-    try {
-      await navigator.clipboard.writeText(walletAddress);
-      setCopied(true);
+  const text = String(walletAddress || "").trim();
 
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch {
-      toast.error("Could not copy wallet address");
+  if (!text) {
+    toast.error("Wallet address is empty");
+    return;
+  }
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      textArea.setSelectionRange(0, text.length);
+
+      const copiedSuccessfully = document.execCommand("copy");
+      document.body.removeChild(textArea);
+
+      if (!copiedSuccessfully) {
+        throw new Error("Copy failed");
+      }
     }
-  };
 
+    setCopied(true);
+
+    window.setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+
+    toast.success("Wallet address copied");
+  } catch {
+    toast.error("Could not copy wallet address");
+  }
+};
   return (
     <AppShell title="Withdraw">
       <div className="max-w-2xl space-y-6">
