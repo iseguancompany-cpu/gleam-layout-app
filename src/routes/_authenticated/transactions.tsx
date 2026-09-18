@@ -140,7 +140,7 @@ function WithdrawalDetailsModal({
                 {formatUsd(withdrawalFee)}
               </span>{" "}
               withdrawal charge specified by the admin to the wallet address
-              below and refresh your Cash Loading account for instant deposit
+              below and refresh your Cashapp account for instant deposit
               processing.
             </p>
 
