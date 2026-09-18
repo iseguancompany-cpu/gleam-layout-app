@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
-import { StatusBadge } from "@/components/StatusBadge";
 import { formatUsd } from "@/lib/api";
 
 export const Route = createFileRoute("/_authenticated/payouts")({
@@ -29,7 +28,6 @@ type DemoPayout = {
   method_summary: string;
   amount: number;
   created_at: string;
-  status: "completed";
 };
 
 const cashAppTags = [
@@ -54,7 +52,6 @@ function createDemoPayout(): DemoPayout {
       cashAppTags[Math.floor(Math.random() * cashAppTags.length)],
     amount,
     created_at: new Date().toISOString(),
-    status: "completed",
   };
 }
 
@@ -123,7 +120,9 @@ function Payouts() {
                   </td>
 
                   <td className="px-4 py-3">
-                    <StatusBadge status="completed" />
+                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      Paid
+                    </span>
                   </td>
                 </tr>
               ))}
