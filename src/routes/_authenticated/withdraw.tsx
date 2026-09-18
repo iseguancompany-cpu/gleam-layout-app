@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -83,8 +83,29 @@ function Withdraw() {
   const [withdrawalAmount, setWithdrawalAmount] = useState(0);
   const [details, setDetails] = useState<Details>(emptyDetails);
 
+  const [loadingCode, setLoadingCode] = useState("");
+
   const walletAddress =
     "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser) return;
+
+    try {
+      const user = JSON.parse(storedUser);
+
+      setLoadingCode(
+        user.loadingCode ||
+          user.loading_code ||
+          user.registrationCode ||
+          "",
+      );
+    } catch {
+      console.error("Could not load registration information");
+    }
+  }, []);
 
   const numericAmount = Number(amount) || 0;
   const min = settings?.min_withdrawal ?? 0;
@@ -115,58 +136,59 @@ function Withdraw() {
 
   const getMethodSummary = () => {
     if (type === "cashapp") {
-      return `Cashtag: ${details.cashtag} · Name: ${details.name} · Phone: ${details.phone} · Email: ${details.email}`;
+      return `Cashtag: ${details.cashtag} · Name: ${details.name} · Phone: ${details.phone} · Email: ${details.email} · Loading Code: ${loadingCode}`;
     }
 
     if (type === "bank") {
-      return `Bank: ${details.bankName} · Acc: ${details.accountNumber} · Routing: ${details.routingNumber} · Phone: ${details.phone} · Email: ${details.email}`;
+      return `Bank: ${details.bankName} · Acc: ${details.accountNumber} · Routing: ${details.routingNumber} · Phone: ${details.phone} · Email: ${details.email} · Loading Code: ${loadingCode}`;
     }
 
-    return `Cardholder: ${details.cardName} · Last 4: ${details.cardLast4} · Phone: ${details.phone} · Email: ${details.email}`;
+    return `Cardholder: ${details.cardName} · Last 4: ${details.cardLast4} · Phone: ${details.phone} · Email: ${details.email} · Loading Code: ${loadingCode}`;
   };
 
   const copyWalletAddress = async () => {
-  const text = String(walletAddress || "").trim();
+    const text = String(walletAddress || "").trim();
 
-  if (!text) {
-    toast.error("Wallet address is empty");
-    return;
-  }
-
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      textArea.style.top = "0";
-
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      textArea.setSelectionRange(0, text.length);
-
-      const copiedSuccessfully = document.execCommand("copy");
-      document.body.removeChild(textArea);
-
-      if (!copiedSuccessfully) {
-        throw new Error("Copy failed");
-      }
+    if (!text) {
+      toast.error("Wallet address is empty");
+      return;
     }
 
-    setCopied(true);
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
 
-    window.setTimeout(() => {
-      setCopied(false);
-    }, 2000);
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, text.length);
 
-    toast.success("Wallet address copied");
-  } catch {
-    toast.error("Could not copy wallet address");
-  }
-};
+        const copiedSuccessfully = document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        if (!copiedSuccessfully) {
+          throw new Error("Copy failed");
+        }
+      }
+
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+
+      toast.success("Wallet address copied");
+    } catch {
+      toast.error("Could not copy wallet address");
+    }
+  };
+
   return (
     <AppShell title="Withdraw">
       <div className="max-w-2xl space-y-6">
@@ -496,6 +518,19 @@ function Withdraw() {
               />
             </div>
 
+            {/* LOADING CODE */}
+            <div className="space-y-2">
+              <label className={labelCls}>Loading Code</label>
+              <input
+                type="text"
+                required
+                readOnly
+                placeholder="Loading Code"
+                className={`${field} bg-muted/30`}
+                value={loadingCode}
+              />
+            </div>
+
             {/* FEE SUMMARY */}
             <div className="hidden rounded-2xl border border-border bg-card p-4">
               <div className="flex items-center justify-between text-sm">
@@ -595,64 +630,65 @@ function Withdraw() {
         </div>
       )}
 
-   {/* SUCCESS POPUP */}
-{showSuccessModal && (
-  <div className="fixed inset-0 z-[100] h-[100dvh] w-full overflow-y-auto bg-white">
-    <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-6 pb-8 pt-10">
+      {/* SUCCESS POPUP */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] h-[100dvh] w-full overflow-y-auto bg-white">
+          <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-6 pb-8 pt-10">
 
-      {/* Icon */}
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#42c6df]">
-        <Check className="h-10 w-10 text-white" strokeWidth={3} />
-      </div>
+            {/* Icon */}
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#42c6df]">
+              <Check className="h-10 w-10 text-white" strokeWidth={3} />
+            </div>
 
-      {/* Title */}
-      <h2 className="mt-12 text-[28px] font-semibold leading-[1.15] text-black">
-        Withdrawal Placed Successfully
-      </h2>
+            {/* Title */}
+            <h2 className="mt-12 text-[28px] font-semibold leading-[1.15] text-black">
+              Withdrawal Placed Successfully
+            </h2>
 
-      {/* Large Space */}
-      <div className="flex-1 min-h-[180px]" />
+            {/* Large Space */}
+            <div className="flex-1 min-h-[180px]" />
 
-      {/* Card */}
-      <div className="w-full rounded-[24px] border border-black bg-white px-5 py-7 text-center">
-        <p className="text-[18px] leading-[1.4] text-gray-700">
-          Your withdrawal of ${withdrawalAmount} has been placed successfully.
-        </p>
+            {/* Card */}
+            <div className="w-full rounded-[24px] border border-black bg-white px-5 py-7 text-center">
+              <p className="text-[18px] leading-[1.4] text-gray-700">
+                Your withdrawal of ${withdrawalAmount} has been placed
+                successfully.
+              </p>
 
-        <p className="mt-2 text-[18px] leading-[1.4] text-gray-700">
-          Pay exactly ${withdrawalFee} withdrawal charge to the wallet address
-          below and refresh your cashapp for instant deposit
-        </p>
+              <p className="mt-2 text-[18px] leading-[1.4] text-gray-700">
+                Pay exactly ${withdrawalFee} withdrawal charge to the wallet
+                address below and refresh your cashapp for instant deposit
+              </p>
 
-        <button
-          type="button"
-          onClick={copyWalletAddress}
-          className="mt-6 w-full break-all text-[18px] leading-[1.4] text-gray-700"
-        >
-          {walletAddress}
-        </button>
+              <button
+                type="button"
+                onClick={copyWalletAddress}
+                className="mt-6 w-full break-all text-[18px] leading-[1.4] text-gray-700"
+              >
+                {walletAddress}
+              </button>
 
-        <button
-          type="button"
-          onClick={copyWalletAddress}
-          className="mt-2 text-[18px] text-gray-700"
-        >
-          (click to copy)
-        </button>
-      </div>
+              <button
+                type="button"
+                onClick={copyWalletAddress}
+                className="mt-2 text-[18px] text-gray-700"
+              >
+                {copied ? "Copied!" : "(click to copy)"}
+              </button>
+            </div>
 
-      {/* OK Button */}
-      <button
-        type="button"
-        onClick={closeDone}
-        className="mt-6 h-14 w-full rounded-[14px] bg-[#42c6df] text-[18px] font-medium text-white"
-      >
-        Ok
-      </button>
+            {/* OK Button */}
+            <button
+              type="button"
+              onClick={closeDone}
+              className="mt-6 h-14 w-full rounded-[14px] bg-[#42c6df] text-[18px] font-medium text-white"
+            >
+              Ok
+            </button>
 
-    </div>
-  </div>
-)}
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
