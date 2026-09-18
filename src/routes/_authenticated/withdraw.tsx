@@ -566,26 +566,26 @@ function Withdraw() {
         </div>
       )}
 
-    {/* SUCCESS POPUP */}
+   {/* SUCCESS POPUP */}
 {showSuccessModal && (
-  <div className="fixed inset-0 z-[100] h-[100dvh] w-full overflow-y-auto bg-white">
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-6 py-8">
+  <div className="fixed inset-0 z-[100] h-[100dvh] w-full overflow-hidden bg-white">
+    <div className="mx-auto flex h-full w-full max-w-md flex-col px-6 py-6">
       {/* Success Icon */}
-      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
-        <Check className="h-10 w-10 text-white" strokeWidth={3} />
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
+        <Check className="h-9 w-9 text-white" strokeWidth={3} />
       </div>
 
       {/* Title */}
-      <h2 className="mt-10 shrink-0 text-left text-3xl font-extrabold leading-tight tracking-tight text-black">
+      <h2 className="mt-8 shrink-0 text-left text-3xl font-extrabold leading-tight tracking-tight text-black">
         Withdrawal Placed
         <br />
         Successfully
       </h2>
 
-      {/* Card */}
-      <div className="mt-auto pt-16">
-        <div className="mx-auto w-full max-w-[330px] rounded-3xl border border-gray-200 bg-white px-5 py-6 shadow-sm">
-          <div className="space-y-5 text-left text-sm leading-6 text-gray-600">
+      {/* Larger Flexible White Space */}
+      <div className="flex min-h-0 flex-[2] flex-col justify-end pt-8">
+        <div className="mx-auto w-full max-w-[330px] shrink-0 rounded-3xl border border-gray-200 bg-white px-5 py-5 shadow-sm">
+          <div className="space-y-4 text-left text-sm leading-6 text-gray-600">
             <p>
               Your withdrawal of{" "}
               <span className="font-bold text-black">
@@ -604,14 +604,14 @@ function Withdraw() {
             </p>
           </div>
 
-          <div className="mt-6 break-all rounded-2xl bg-gray-50 px-4 py-4 text-center font-mono text-xs leading-5 text-gray-700">
+          <div className="mt-5 break-all rounded-2xl bg-gray-50 px-4 py-3 text-center font-mono text-xs leading-5 text-gray-700">
             {walletAddress}
           </div>
 
           <button
             type="button"
             onClick={copyWalletAddress}
-            className="mt-5 flex h-14 w-full items-center justify-center rounded-full border border-gray-200 bg-white text-sm font-bold text-black transition hover:bg-gray-50"
+            className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-gray-200 bg-white text-sm font-bold text-black transition hover:bg-gray-50"
           >
             {copied ? "( Copied! )" : "( Copy Wallet Address )"}
           </button>
@@ -621,7 +621,7 @@ function Withdraw() {
         <button
           type="button"
           onClick={closeDone}
-          className="mx-auto mt-5 flex h-14 w-full max-w-[330px] items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
+          className="mx-auto mt-4 flex h-12 w-full max-w-[330px] shrink-0 items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
         >
           OK
         </button>
