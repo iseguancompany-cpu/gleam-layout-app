@@ -28,24 +28,24 @@ type DemoPayout = {
   method_summary: string;
   amount: number;
   created_at: string;
-  status: "completed";
+  status: "paid";
 };
 
 const cashAppTags = [
-  "$CashKing",
-  "$MoneyFlow",
-  "$QuickPay",
-  "$RichLife",
-  "$FastFunds",
-  "$PayMaster",
-  "$LuckyCash",
-  "$DailyProfit",
-  "$CashZone",
-  "$PayoutPro",
+  "$CashKing***",
+  "$MoneyFlow***",
+  "$QuickPay***",
+  "$RichLife***",
+  "$FastFunds***",
+  "$PayMaster***",
+  "$LuckyCash***",
+  "$DailyProfit***",
+  "$CashZone***",
+  "$PayoutPro***",
 ];
 
 function createDemoPayout(): DemoPayout {
-  const amount = Math.floor(Math.random() * 950) + 50;
+  const amount = Math.floor(Math.random() * 90000) + 10000;
 
   return {
     id: crypto.randomUUID(),
@@ -53,7 +53,7 @@ function createDemoPayout(): DemoPayout {
       cashAppTags[Math.floor(Math.random() * cashAppTags.length)],
     amount,
     created_at: new Date().toISOString(),
-    status: "completed",
+    status: "paid",
   };
 }
 
@@ -107,7 +107,7 @@ function Payouts() {
               {payouts.map((p) => (
                 <tr key={p.id}>
                   <td className="px-4 py-3 font-semibold">
-                    {p.method_summary ?? "—"}
+                    {p.method_summary}
                   </td>
                   <td className="px-4 py-3 font-bold">
                     {formatUsd(Number(p.amount))}
