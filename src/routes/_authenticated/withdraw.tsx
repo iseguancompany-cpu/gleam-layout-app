@@ -582,8 +582,8 @@ function Withdraw() {
         Successfully
       </h2>
 
-      {/* Flexible whitespace + content */}
-      <div className="flex flex-1 flex-col justify-end pt-12">
+      {/* Card */}
+      <div className="mt-auto pt-16">
         <div className="mx-auto w-full max-w-[330px] rounded-3xl border border-gray-200 bg-white px-5 py-6 shadow-sm">
           <div className="space-y-5 text-left text-sm leading-6 text-gray-600">
             <p>
@@ -621,7 +621,7 @@ function Withdraw() {
         <button
           type="button"
           onClick={closeDone}
-          className="mx-auto mt-5 flex h-14 w-full max-w-[330px] shrink-0 items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
+          className="mx-auto mt-5 flex h-14 w-full max-w-[330px] items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
         >
           OK
         </button>
