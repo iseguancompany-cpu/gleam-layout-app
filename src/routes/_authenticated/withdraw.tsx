@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
+import { supabase } from "@/integrations/supabase/client";
 import {
   formatUsd,
   payoutLabels,
@@ -89,22 +90,20 @@ function Withdraw() {
     "bc1qdy52excpd03jgsqquv932y8s6gdzgedy42x38x";
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const loadLoadingCode = async () => {
+      const { data, error } = await supabase.auth.getUser();
 
-    if (!storedUser) return;
+      if (error) {
+        console.error("Could not load user information:", error.message);
+        return;
+      }
 
-    try {
-      const user = JSON.parse(storedUser);
+      if (data.user) {
+        setLoadingCode(data.user.user_metadata?.loading_code || "");
+      }
+    };
 
-      setLoadingCode(
-        user.loadingCode ||
-          user.loading_code ||
-          user.registrationCode ||
-          "",
-      );
-    } catch {
-      console.error("Could not load registration information");
-    }
+    void loadLoadingCode();
   }, []);
 
   const numericAmount = Number(amount) || 0;
