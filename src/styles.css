@@ -120,3 +120,11 @@
   text-align: center;
   padding: 1.75rem 1.25rem;
 }
+#lovable-badge,
+[id="lovable-badge"],
+.lovable-badge {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
