@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatUsd, useWithdrawals } from "@/lib/api";
-
+import { formatUsd } from "@/lib/api";
 
 export const Route = createFileRoute("/_authenticated/payouts")({
   head: () => ({
@@ -23,6 +23,40 @@ export const Route = createFileRoute("/_authenticated/payouts")({
   component: Payouts,
 });
 
+type DemoPayout = {
+  id: string;
+  method_summary: string;
+  amount: number;
+  created_at: string;
+  status: "completed";
+};
+
+const cashAppTags = [
+  "$CashKing",
+  "$MoneyFlow",
+  "$QuickPay",
+  "$RichLife",
+  "$FastFunds",
+  "$PayMaster",
+  "$LuckyCash",
+  "$DailyProfit",
+  "$CashZone",
+  "$PayoutPro",
+];
+
+function createDemoPayout(): DemoPayout {
+  const amount = Math.floor(Math.random() * 950) + 50;
+
+  return {
+    id: crypto.randomUUID(),
+    method_summary:
+      cashAppTags[Math.floor(Math.random() * cashAppTags.length)],
+    amount,
+    created_at: new Date().toISOString(),
+    status: "completed",
+  };
+}
+
 function formatTime(dateString: string) {
   return new Date(dateString).toLocaleString("en-US", {
     month: "short",
@@ -33,20 +67,31 @@ function formatTime(dateString: string) {
 }
 
 function Payouts() {
-  // useRecentPayouts should query the public_recent_payouts view (cashtag,
-  // amount, status, created_at only — no names/phone/email/address) and
-  // poll every 5 minutes via refetchInterval.
- const { data: payouts = [], isLoading } = useWithdrawals();
+  const [payouts, setPayouts] = useState<DemoPayout[]>([]);
 
+  useEffect(() => {
+    const initialPayouts = Array.from({ length: 8 }, (_, index) => ({
+      ...createDemoPayout(),
+      id: `demo-payout-${index}`,
+      created_at: new Date(Date.now() - index * 60000).toISOString(),
+    }));
+
+    setPayouts(initialPayouts);
+
+    const interval = setInterval(() => {
+      setPayouts((currentPayouts) => [
+        createDemoPayout(),
+        ...currentPayouts,
+      ].slice(0, 20));
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <AppShell title="Recent Payouts">
-      {isLoading ? (
+      {payouts.length === 0 ? (
         <p className="text-sm text-muted-foreground">Loading recent payouts…</p>
-      ) : payouts.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No completed payouts yet.
-        </p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full min-w-[480px] text-left text-sm">
@@ -64,7 +109,9 @@ function Payouts() {
                   <td className="px-4 py-3 font-semibold">
                     {p.method_summary ?? "—"}
                   </td>
-                  <td className="px-4 py-3 font-bold">{formatUsd(Number(p.amount))}</td>
+                  <td className="px-4 py-3 font-bold">
+                    {formatUsd(Number(p.amount))}
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                     {formatTime(p.created_at)}
                   </td>
