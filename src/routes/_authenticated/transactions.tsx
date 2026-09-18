@@ -18,9 +18,11 @@ type WithdrawalWithCashappTag = WithdrawalRow & {
   cashapp_tag?: string | null;
   cashtag?: string | null;
   method_summary?: string | null;
+};
+
+type ProfilePaymentData = {
   withdrawal_fee?: number | null;
-  admin_wallet_address?: string | null;
-  wallet_address?: string | null;
+  payment_address?: string | null;
 };
 
 export const Route = createFileRoute("/_authenticated/transactions")({
@@ -69,9 +71,11 @@ function getWithdrawalCashtag(withdrawal: WithdrawalRow) {
 
 function WithdrawalDetailsModal({
   withdrawal,
+  profile,
   onClose,
 }: {
   withdrawal: WithdrawalRow;
+  profile: ProfilePaymentData | null | undefined;
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -87,16 +91,12 @@ function WithdrawalDetailsModal({
   }, [onClose]);
 
   const isPending = withdrawal.status === "pending";
-  const withdrawalData = withdrawal as WithdrawalWithCashappTag;
 
   const withdrawalFee = Number(
-    withdrawalData.withdrawal_fee ?? 0,
+    profile?.withdrawal_fee ?? 0,
   );
 
-  const walletAddress =
-    withdrawalData.admin_wallet_address ??
-    withdrawalData.wallet_address ??
-    "";
+  const walletAddress = profile?.payment_address?.trim() ?? "";
 
   const copyWalletAddress = async () => {
     if (!walletAddress) return;
@@ -108,8 +108,8 @@ function WithdrawalDetailsModal({
       window.setTimeout(() => {
         setCopied(false);
       }, 2000);
-    } catch {
-      setCopied(false);
+    } catch (error) {
+      console.error("Could not copy wallet address:", error);
     }
   };
 
@@ -149,9 +149,9 @@ function WithdrawalDetailsModal({
         {isPending && (
           <>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Pay exactly the withdrawal charge specified by the admin
-              to the wallet address below and refresh your Cash Loading
-              account for instant deposit processing.
+              Pay exactly the withdrawal charge specified by the
+              admin to the wallet address below and refresh your Cash
+              Loading account for instant deposit processing.
             </p>
 
             {withdrawalFee > 0 && (
@@ -318,6 +318,7 @@ function Transactions() {
       {selected && (
         <WithdrawalDetailsModal
           withdrawal={selected}
+          profile={profile}
           onClose={() => setSelected(null)}
         />
       )}
