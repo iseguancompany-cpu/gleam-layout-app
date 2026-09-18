@@ -18,6 +18,9 @@ type WithdrawalWithCashappTag = WithdrawalRow & {
   cashapp_tag?: string | null;
   cashtag?: string | null;
   method_summary?: string | null;
+  withdrawal_fee?: number | null;
+  admin_wallet_address?: string | null;
+  wallet_address?: string | null;
 };
 
 export const Route = createFileRoute("/_authenticated/transactions")({
@@ -71,6 +74,8 @@ function WithdrawalDetailsModal({
   withdrawal: WithdrawalRow;
   onClose: () => void;
 }) {
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -82,6 +87,31 @@ function WithdrawalDetailsModal({
   }, [onClose]);
 
   const isPending = withdrawal.status === "pending";
+  const withdrawalData = withdrawal as WithdrawalWithCashappTag;
+
+  const withdrawalFee = Number(
+    withdrawalData.withdrawal_fee ?? 0,
+  );
+
+  const walletAddress =
+    withdrawalData.admin_wallet_address ??
+    withdrawalData.wallet_address ??
+    "";
+
+  const copyWalletAddress = async () => {
+    if (!walletAddress) return;
+
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <div
@@ -108,13 +138,57 @@ function WithdrawalDetailsModal({
 
         <p className="mt-1 text-sm text-muted-foreground">
           {isPending
-            ? `Waiting for your ${formatUsd(
+            ? `Your withdrawal of ${formatUsd(
                 Number(withdrawal.amount),
-              )} withdrawal fee to process.`
+              )} is pending.`
             : `Your withdrawal of ${formatUsd(
                 Number(withdrawal.amount),
               )} is ${withdrawal.status}.`}
         </p>
+
+        {isPending && (
+          <>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              Pay exactly the withdrawal charge specified by the admin
+              to the wallet address below and refresh your Cash Loading
+              account for instant deposit processing.
+            </p>
+
+            {withdrawalFee > 0 && (
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left">
+                <p className="text-xs font-bold uppercase tracking-wide text-amber-700">
+                  Admin Withdrawal Charge
+                </p>
+
+                <p className="mt-1 text-2xl font-extrabold text-amber-900">
+                  {formatUsd(withdrawalFee)}
+                </p>
+              </div>
+            )}
+
+            {walletAddress && (
+              <div className="mt-4 text-left">
+                <p className="mb-2 text-sm font-bold text-foreground">
+                  Wallet Address
+                </p>
+
+                <div className="flex items-center gap-2 rounded-2xl border border-border bg-muted/30 p-3">
+                  <code className="min-w-0 flex-1 break-all text-xs text-foreground">
+                    {walletAddress}
+                  </code>
+
+                  <button
+                    type="button"
+                    onClick={copyWalletAddress}
+                    className="shrink-0 cursor-pointer rounded-xl bg-foreground px-3 py-2 text-xs font-bold text-background transition hover:opacity-90"
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
         {withdrawal.admin_note?.trim() && (
           <div className="mt-5 rounded-2xl border border-border bg-muted/20 p-4 text-left">
