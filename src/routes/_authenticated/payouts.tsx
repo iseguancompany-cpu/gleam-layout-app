@@ -11,7 +11,8 @@ export const Route = createFileRoute("/_authenticated/payouts")({
       { title: "Recent Payouts — Cash Loading Portal" },
       {
         name: "description",
-        content: "Recently completed payouts across the platform, updated every few minutes.",
+        content:
+          "Recently completed payouts across the platform, updated every few minutes.",
       },
       { property: "og:title", content: "Recent Payouts — Cash Loading Portal" },
       {
@@ -28,7 +29,7 @@ type DemoPayout = {
   method_summary: string;
   amount: number;
   created_at: string;
-  status: "paid";
+  status: "completed";
 };
 
 const cashAppTags = [
@@ -53,7 +54,7 @@ function createDemoPayout(): DemoPayout {
       cashAppTags[Math.floor(Math.random() * cashAppTags.length)],
     amount,
     created_at: new Date().toISOString(),
-    status: "paid",
+    status: "completed",
   };
 }
 
@@ -91,7 +92,9 @@ function Payouts() {
   return (
     <AppShell title="Recent Payouts">
       {payouts.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Loading recent payouts…</p>
+        <p className="text-sm text-muted-foreground">
+          Loading recent payouts…
+        </p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full min-w-[480px] text-left text-sm">
@@ -103,20 +106,24 @@ function Payouts() {
                 <th className="px-4 py-3 font-bold">Status</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-border">
               {payouts.map((p) => (
                 <tr key={p.id}>
                   <td className="px-4 py-3 font-semibold">
                     {p.method_summary}
                   </td>
+
                   <td className="px-4 py-3 font-bold">
                     {formatUsd(Number(p.amount))}
                   </td>
+
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                     {formatTime(p.created_at)}
                   </td>
+
                   <td className="px-4 py-3">
-                    <StatusBadge status={p.status} />
+                    <StatusBadge status="completed" />
                   </td>
                 </tr>
               ))}
