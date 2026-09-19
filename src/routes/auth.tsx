@@ -8,33 +8,51 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Cash Loading Portal" },
-      { name: "description", content: "Sign in or create your account to manage payouts and withdrawals." },
-      { property: "og:title", content: "Sign in — Cash Loading Portal" },
-      { property: "og:description", content: "Sign in or create your account." },
+      { title: "Sign in — Cash Loading" },
+      {
+        name: "description",
+        content:
+          "Sign in or create your account to manage payouts and withdrawals.",
+      },
+      { property: "og:title", content: "Sign in — Cash Loading" },
+      {
+        property: "og:description",
+        content: "Sign in or create your account.",
+      },
     ],
   }),
   component: AuthPage,
 });
 
-const emailSchema = z.string().trim().email({ message: "Enter a valid email address" }).max(255);
+const emailSchema = z
+  .string()
+  .trim()
+  .email({ message: "Enter a valid email address" })
+  .max(255);
+
 const passwordSchema = z
   .string()
   .min(8, { message: "Password must be at least 8 characters" })
   .max(72);
 
-// New signup-only fields
 const phoneSchema = z
   .string()
   .trim()
   .min(7, { message: "Enter a valid phone number" })
   .max(20, { message: "Phone number is too long" })
-  .regex(/^[0-9+\-\s()]+$/, { message: "Phone number contains invalid characters" });
+  .regex(/^[0-9+\-\s()]+$/, {
+    message: "Phone number contains invalid characters",
+  });
 
 const countrySchema = z
   .string()
   .trim()
   .min(1, { message: "Select your country" });
+
+const stateSchema = z
+  .string()
+  .trim()
+  .min(1, { message: "Select your state" });
 
 const loadingCodeSchema = z
   .string()
@@ -44,15 +62,65 @@ const loadingCodeSchema = z
 
 const DEFAULT_REFERRAL = "Admin";
 
-// Small, common country list — extend as needed.
 const COUNTRIES = [
-  "Ghana",
-  "Kenya",
   "South Africa",
   "United States",
   "United Kingdom",
   "Canada",
   "Other",
+];
+
+const US_STATES = [
+  "Alabama",
+  "Alaska",
+  "Arizona",
+  "Arkansas",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Delaware",
+  "Florida",
+  "Georgia",
+  "Hawaii",
+  "Idaho",
+  "Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Kentucky",
+  "Louisiana",
+  "Maine",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Minnesota",
+  "Mississippi",
+  "Missouri",
+  "Montana",
+  "Nebraska",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New Mexico",
+  "New York",
+  "North Carolina",
+  "North Dakota",
+  "Ohio",
+  "Oklahoma",
+  "Oregon",
+  "Pennsylvania",
+  "Rhode Island",
+  "South Carolina",
+  "South Dakota",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Vermont",
+  "Virginia",
+  "Washington",
+  "West Virginia",
+  "Wisconsin",
+  "Wyoming",
 ];
 
 type Mode = "login" | "signup" | "forgot";
@@ -62,23 +130,26 @@ const field =
 
 function AuthPage() {
   const navigate = useNavigate();
+
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // New signup-only fields
   const [phone, setPhone] = useState("+1");
   const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
   const [loadingCode, setLoadingCode] = useState("");
-  const [referral] = useState(DEFAULT_REFERRAL); // always "Admin", not user-editable
+  const [referral] = useState(DEFAULT_REFERRAL);
 
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard", replace: true });
+      if (data.user) {
+        navigate({ to: "/dashboard", replace: true });
+      }
     });
   }, [navigate]);
 
@@ -87,6 +158,7 @@ function AuthPage() {
     setNotice(null);
 
     const parsedEmail = emailSchema.safeParse(email);
+
     if (!parsedEmail.success) {
       toast.error(parsedEmail.error.issues[0]!.message);
       return;
@@ -94,31 +166,44 @@ function AuthPage() {
 
     if (mode !== "forgot") {
       const parsedPassword = passwordSchema.safeParse(password);
+
       if (!parsedPassword.success) {
         toast.error(parsedPassword.error.issues[0]!.message);
         return;
       }
     }
 
-    // Validate the new signup-only fields
     let parsedPhone: z.SafeParseReturnType<string, string> | null = null;
     let parsedCountry: z.SafeParseReturnType<string, string> | null = null;
+    let parsedState: z.SafeParseReturnType<string, string> | null = null;
     let parsedLoadingCode: z.SafeParseReturnType<string, string> | null = null;
 
     if (mode === "signup") {
       parsedPhone = phoneSchema.safeParse(phone);
+
       if (!parsedPhone.success) {
         toast.error(parsedPhone.error.issues[0]!.message);
         return;
       }
 
       parsedCountry = countrySchema.safeParse(country);
+
       if (!parsedCountry.success) {
         toast.error(parsedCountry.error.issues[0]!.message);
         return;
       }
 
+      if (country === "United States") {
+        parsedState = stateSchema.safeParse(state);
+
+        if (!parsedState.success) {
+          toast.error(parsedState.error.issues[0]!.message);
+          return;
+        }
+      }
+
       parsedLoadingCode = loadingCodeSchema.safeParse(loadingCode);
+
       if (!parsedLoadingCode.success) {
         toast.error(parsedLoadingCode.error.issues[0]!.message);
         return;
@@ -126,15 +211,17 @@ function AuthPage() {
     }
 
     setBusy(true);
+
     try {
       if (mode === "forgot") {
         await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
-        // Never reveal whether the address is registered.
+
         setNotice(
           "If an account exists for that address, a password reset link is on its way. The link expires shortly.",
         );
+
         return;
       }
 
@@ -148,18 +235,30 @@ function AuthPage() {
               full_name: name.trim(),
               phone: parsedPhone!.data,
               country: parsedCountry!.data,
-              // Loading code is saved permanently at signup and is never
-              // editable again from the client after this point.
+
+              // Only save a state when the user selected United States.
+              state:
+                parsedCountry!.data === "United States"
+                  ? parsedState!.data
+                  : null,
+
               loading_code: parsedLoadingCode!.data,
-              referral, // always "Admin"
+              referral,
             },
           },
         });
-        if (error) throw error;
+
+        if (error) {
+          throw error;
+        }
+
         if (!data.session) {
-          setNotice("Check your email to confirm your account, then sign in.");
+          setNotice(
+            "Check your email to confirm your account, then sign in.",
+          );
           return;
         }
+
         navigate({ to: "/dashboard", replace: true });
         return;
       }
@@ -168,10 +267,16 @@ function AuthPage() {
         email: parsedEmail.data,
         password,
       });
-      if (error) throw error;
+
+      if (error) {
+        throw error;
+      }
+
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      toast.error(
+        err instanceof Error ? err.message : "Something went wrong",
+      );
     } finally {
       setBusy(false);
     }
@@ -182,7 +287,7 @@ function AuthPage() {
       <header className="bg-topbar text-topbar-foreground">
         <div className="mx-auto max-w-5xl px-4 py-4">
           <Link to="/" className="text-sm font-bold sm:text-base">
-            Cash Loading Portal
+            Cash Loading
           </Link>
         </div>
       </header>
@@ -190,7 +295,11 @@ function AuthPage() {
       <main className="mx-auto max-w-md px-4 py-10">
         <div className="rounded-2xl bg-card p-5 shadow-card sm:p-6">
           <h1 className="text-2xl font-extrabold tracking-tight">
-            {mode === "login" ? "Sign in" : mode === "signup" ? "Create account" : "Reset password"}
+            {mode === "login"
+              ? "Sign in"
+              : mode === "signup"
+                ? "Create account"
+                : "Reset password"}
           </h1>
 
           {mode !== "forgot" && (
@@ -204,7 +313,9 @@ function AuthPage() {
                     setNotice(null);
                   }}
                   className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    mode === m ? "bg-card shadow-card" : "text-muted-foreground"
+                    mode === m
+                      ? "bg-card shadow-card"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {m === "login" ? "Sign in" : "Sign up"}
@@ -214,7 +325,9 @@ function AuthPage() {
           )}
 
           {notice && (
-            <p className="mt-4 rounded-xl border border-border bg-muted/50 p-3 text-sm">{notice}</p>
+            <p className="mt-4 rounded-xl border border-border bg-muted/50 p-3 text-sm">
+              {notice}
+            </p>
           )}
 
           <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
@@ -223,6 +336,7 @@ function AuthPage() {
                 <label className="text-sm font-bold" htmlFor="name">
                   Full name
                 </label>
+
                 <input
                   id="name"
                   className={field}
@@ -238,6 +352,7 @@ function AuthPage() {
               <label className="text-sm font-bold" htmlFor="email">
                 Email
               </label>
+
               <input
                 id="email"
                 type="email"
@@ -254,6 +369,7 @@ function AuthPage() {
                 <label className="text-sm font-bold" htmlFor="phone">
                   Phone number
                 </label>
+
                 <input
                   id="phone"
                   type="tel"
@@ -273,19 +389,57 @@ function AuthPage() {
                 <label className="text-sm font-bold" htmlFor="country">
                   Country
                 </label>
+
                 <select
                   id="country"
                   className={field}
                   value={country}
-                  onChange={(e) => setCountry(e.target.value)}
+                  onChange={(e) => {
+                    const selectedCountry = e.target.value;
+
+                    setCountry(selectedCountry);
+
+                    // Clear the state if the user switches away
+                    // from United States.
+                    if (selectedCountry !== "United States") {
+                      setState("");
+                    }
+                  }}
                   required
                 >
                   <option value="" disabled>
                     Select your country
                   </option>
+
                   {COUNTRIES.map((c) => (
                     <option key={c} value={c}>
                       {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {mode === "signup" && country === "United States" && (
+              <div className="space-y-2">
+                <label className="text-sm font-bold" htmlFor="state">
+                  State
+                </label>
+
+                <select
+                  id="state"
+                  className={field}
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>
+                    Select your state
+                  </option>
+
+                  {US_STATES.map((usState) => (
+                    <option key={usState} value={usState}>
+                      {usState}
                     </option>
                   ))}
                 </select>
@@ -297,6 +451,7 @@ function AuthPage() {
                 <label className="text-sm font-bold" htmlFor="loadingCode">
                   Loading code
                 </label>
+
                 <input
                   id="loadingCode"
                   className={field}
@@ -305,8 +460,10 @@ function AuthPage() {
                   onChange={(e) => setLoadingCode(e.target.value)}
                   required
                 />
+
                 <p className="text-xs text-muted-foreground">
-                  This code is saved permanently and can’t be changed after your account is created.
+                  This code is saved permanently and can’t be changed after
+                  your account is created.
                 </p>
               </div>
             )}
@@ -316,6 +473,7 @@ function AuthPage() {
                 <label className="text-sm font-bold" htmlFor="referral">
                   Referral
                 </label>
+
                 <input
                   id="referral"
                   className={`${field} cursor-not-allowed opacity-70`}
@@ -331,10 +489,13 @@ function AuthPage() {
                 <label className="text-sm font-bold" htmlFor="password">
                   Password
                 </label>
+
                 <input
                   id="password"
                   type="password"
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  autoComplete={
+                    mode === "signup" ? "new-password" : "current-password"
+                  }
                   className={field}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
